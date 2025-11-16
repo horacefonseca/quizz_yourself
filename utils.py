@@ -1,10 +1,11 @@
 """
 Utility functions for the Quiz Application
-Handles YAML loading, question sampling, grading, and PDF generation
+Handles YAML/Markdown loading, question sampling, grading, and PDF generation
 """
 
 import yaml
 import random
+import re
 from datetime import datetime
 from typing import List, Dict, Any, Tuple
 from fpdf import FPDF
@@ -61,6 +62,163 @@ def load_yaml_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]:
         return [], f"YAML parsing error: {str(e)}"
     except Exception as e:
         return [], f"Error loading questions: {str(e)}"
+
+
+def load_markdown_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]:
+    """
+    Load questions from Markdown content
+
+    Markdown format:
+    # Question 1
+
+    **Type:** mc
+
+    What is the sigmoid output range?
+
+    **Options:**
+    - A) 0–1
+    - B) -1–1
+    - C) 0–10
+
+    **Correct:** A
+
+    **Explanation:** Sigmoid always outputs 0–1.
+
+    **Chapter:** 1.4
+
+    ---
+
+    Args:
+        file_content: String content of Markdown file
+
+    Returns:
+        Tuple of (list of questions, error message if any)
+    """
+    try:
+        questions = []
+
+        # Split by question separators (---) or markdown headers
+        # First, split by --- or by # Question pattern
+        question_blocks = re.split(r'\n---+\n|\n(?=# Question \d+)', file_content.strip())
+
+        question_id = 1
+
+        for block in question_blocks:
+            block = block.strip()
+            if not block or block.startswith('#') and 'Question' not in block:
+                continue
+
+            # Extract question text (first line after header or first paragraph)
+            lines = block.split('\n')
+
+            # Initialize question dict
+            question = {
+                'id': question_id,
+                'question': '',
+                'type': 'mc',  # default
+                'options': [],
+                'correct': '',
+                'answer': '',
+                'explanation': '',
+                'chapter': ''
+            }
+
+            # Parse the block
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+
+                # Skip empty lines and headers
+                if not line or line.startswith('#'):
+                    i += 1
+                    continue
+
+                # Type field
+                if line.startswith('**Type:**'):
+                    question['type'] = line.replace('**Type:**', '').strip().lower()
+                    i += 1
+                    continue
+
+                # Options section
+                if line.startswith('**Options:**'):
+                    i += 1
+                    while i < len(lines) and lines[i].strip().startswith('-'):
+                        option = lines[i].strip()[2:].strip()  # Remove "- " prefix
+                        question['options'].append(option)
+                        i += 1
+                    continue
+
+                # Correct answer
+                if line.startswith('**Correct:**'):
+                    question['correct'] = line.replace('**Correct:**', '').strip()
+                    i += 1
+                    continue
+
+                # Answer (for open questions)
+                if line.startswith('**Answer:**'):
+                    question['answer'] = line.replace('**Answer:**', '').strip()
+                    i += 1
+                    continue
+
+                # Explanation
+                if line.startswith('**Explanation:**'):
+                    question['explanation'] = line.replace('**Explanation:**', '').strip()
+                    i += 1
+                    continue
+
+                # Chapter
+                if line.startswith('**Chapter:**'):
+                    question['chapter'] = line.replace('**Chapter:**', '').strip()
+                    i += 1
+                    continue
+
+                # Question text (if not yet set)
+                if not question['question'] and line and not line.startswith('**'):
+                    question['question'] = line
+                    i += 1
+                    continue
+
+                i += 1
+
+            # Validate and add question
+            if question['question']:
+                # Validate required fields
+                if question['type'] == 'mc':
+                    if not question['options'] or not question['correct']:
+                        continue  # Skip incomplete MC questions
+                elif question['type'] == 'open':
+                    if not question['answer']:
+                        continue  # Skip incomplete open questions
+
+                questions.append(question)
+                question_id += 1
+
+        if not questions:
+            return [], "No valid questions found in markdown file"
+
+        return questions, ""
+
+    except Exception as e:
+        return [], f"Error parsing markdown: {str(e)}"
+
+
+def load_questions(file_content: str, file_type: str) -> Tuple[List[Dict[str, Any]], str]:
+    """
+    Load questions from either YAML or Markdown format
+
+    Args:
+        file_content: String content of file
+        file_type: Either 'yaml' or 'markdown'
+
+    Returns:
+        Tuple of (list of questions, error message if any)
+    """
+    if file_type.lower() in ['yaml', 'yml']:
+        return load_yaml_questions(file_content)
+    elif file_type.lower() in ['markdown', 'md']:
+        return load_markdown_questions(file_content)
+    else:
+        return [], f"Unsupported file type: {file_type}"
 
 
 def sample_questions(questions: List[Dict[str, Any]], num_questions: int) -> List[Dict[str, Any]]:

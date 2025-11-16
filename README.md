@@ -1,10 +1,10 @@
 # Interactive Quiz Application
 
-A flexible, interactive quiz application built with Streamlit that works with any YAML-formatted question bank.
+A flexible, interactive quiz application built with Streamlit that works with any YAML or Markdown formatted question bank.
 
 ## Features
 
-- **Universal YAML Support**: Works with any properly formatted YAML question bank
+- **Universal Format Support**: Works with any properly formatted YAML or Markdown question bank
 - **Two Question Types**:
   - Multiple Choice (MC)
   - Open-ended questions
@@ -21,12 +21,14 @@ A flexible, interactive quiz application built with Streamlit that works with an
 ```
 quiz_app/
 ├── app.py                                    # Main Streamlit application
-├── utils.py                                  # Helper functions (YAML loader, grading, PDF generation)
+├── utils.py                                  # Helper functions (YAML/MD loader, grading, PDF)
 ├── requirements.txt                          # Python dependencies
 ├── README.md                                 # This file
 └── sample_quizzes/
-    ├── ML2_Professor_Rico.yaml              # Quick sample (40 questions)
-    └── ML_Classification_Complete_250.yaml  # Complete question bank (250 questions)
+    ├── ML2_Professor_Rico.yaml              # Quick sample YAML (40 questions)
+    ├── ML_Classification_Complete_250.yaml  # Complete YAML bank (250 questions)
+    ├── ML_Classification_Complete_250.md    # Complete MD bank (250 questions)
+    └── Sample_Quiz.md                       # Sample markdown format (15 questions)
 ```
 
 ## Bundled Question Banks
@@ -34,9 +36,9 @@ quiz_app/
 The app includes two preset ML Classification quiz banks:
 
 ### 1. ML Classification Complete (250 questions)
-**Filename:** `ML_Classification_Complete_250.yaml`
+**Filenames:** `ML_Classification_Complete_250.yaml` / `ML_Classification_Complete_250.md`
 
-The most comprehensive option for thorough assessment:
+The most comprehensive option for thorough assessment (available in both YAML and Markdown formats):
 - **Part A**: 125 Concept Questions covering:
   - Probability & Statistical Foundations (15)
   - Binary Classification Fundamentals (20)
@@ -68,11 +70,15 @@ A curated selection of essential questions:
 
 **Best for:** Practice quizzes, quick review, class exercises
 
-## YAML Question Bank Format
+## Question Bank Formats
 
-Your YAML file must follow this structure:
+The app supports **two file formats**: YAML and Markdown.
 
-### Multiple Choice Question Example:
+### Format 1: YAML (.yaml, .yml)
+
+Structured format ideal for programmatic generation.
+
+#### Multiple Choice Question Example:
 ```yaml
 - id: 1
   question: "What is the sigmoid output range?"
@@ -86,7 +92,7 @@ Your YAML file must follow this structure:
   chapter: "1.4"
 ```
 
-### Open Question Example:
+#### Open Question Example:
 ```yaml
 - id: 2
   question: "Define Logistic Regression"
@@ -96,7 +102,61 @@ Your YAML file must follow this structure:
   chapter: "4"
 ```
 
-### Required Fields:
+---
+
+### Format 2: Markdown (.md)
+
+Human-readable format ideal for manual creation and readability.
+
+#### Multiple Choice Question Example:
+```markdown
+# Question 1
+
+**Type:** mc
+
+What is the sigmoid output range?
+
+**Options:**
+- A) 0–1
+- B) -1–1
+- C) 0–10
+
+**Correct:** A
+
+**Explanation:** Sigmoid always outputs 0–1.
+
+**Chapter:** 1.4
+
+---
+```
+
+#### Open Question Example:
+```markdown
+# Question 2
+
+**Type:** open
+
+Define Logistic Regression
+
+**Answer:** A model for binary classification mapping linear inputs to probabilities using sigmoid.
+
+**Explanation:** It models log-odds as a linear function.
+
+**Chapter:** 4
+
+---
+```
+
+#### Markdown Format Notes:
+- Each question starts with `# Question {number}` or just `# Question`
+- Separate questions with `---` (three dashes)
+- Field names use bold markdown: `**Field Name:**`
+- Options use markdown list format: `- A) option text`
+- IDs are auto-assigned if not specified in header
+
+---
+
+### Required Fields (Both Formats):
 - **id**: Unique question identifier (integer)
 - **question**: Question text (string)
 - **type**: Question type - either "mc" or "open"
@@ -224,10 +284,11 @@ Your YAML file must follow this structure:
 
 #### Adding New Quizzes
 
-1. **Create your YAML file**
-   - Follow the format shown above
-   - Validate with a YAML validator
-   - Save as `YourQuizName.yaml`
+1. **Create your question bank file**
+   - Choose YAML (.yaml) or Markdown (.md) format
+   - Follow the format examples shown above
+   - For YAML: Validate with a YAML validator
+   - Save as `YourQuizName.yaml` or `YourQuizName.md`
 
 2. **Add to repository**
    - Place in `sample_quizzes/` folder
@@ -238,12 +299,12 @@ Your YAML file must follow this structure:
    - In the "Select a quiz" dropdown
    - Users can select it from the sidebar
 
-#### Creating Custom YAML Files
+#### Creating Custom Question Banks
 
 Tips for creating effective quizzes:
 
 1. **Use consistent formatting**
-   - For MC: Always use "A)", "B)", "C)" format
+   - For MC: Always use "A)", "B)", "C)", "D)" format
    - Keep IDs sequential
    - Include explanations for learning value
 
@@ -255,18 +316,19 @@ Tips for creating effective quizzes:
    - Use chapter field for categorization
    - Helps students identify weak areas
 
-4. **Test your YAML**
-   - Validate at https://www.yamllint.com
+4. **Test your question bank**
+   - For YAML: Validate at https://www.yamllint.com
+   - For Markdown: Check separator `---` and bold field syntax
    - Test upload in the app before sharing
 
 ## Troubleshooting
 
 ### Common Issues
 
-**YAML won't load**
-- Check for proper indentation (use spaces, not tabs)
-- Ensure all required fields are present
-- Validate at yamllint.com
+**Question bank won't load**
+- **For YAML**: Check for proper indentation (use spaces, not tabs), validate at yamllint.com
+- **For Markdown**: Ensure questions are separated by `---`, field names use bold syntax `**Field:**`
+- Ensure all required fields are present for both formats
 
 **App crashes on deployment**
 - Verify requirements.txt matches your local environment
@@ -279,9 +341,9 @@ Tips for creating effective quizzes:
 - Try a different browser
 
 **Questions not displaying**
-- Verify YAML structure matches examples
+- Verify YAML or Markdown structure matches examples in this README
 - Check question type is either "mc" or "open"
-- Ensure options list is properly formatted
+- For MC questions: Ensure options list is properly formatted (4 options in YAML list or markdown bullets)
 
 ## Technical Details
 

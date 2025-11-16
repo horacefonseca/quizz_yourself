@@ -7,7 +7,7 @@ import streamlit as st
 import os
 from pathlib import Path
 from utils import (
-    load_yaml_questions,
+    load_questions,
     sample_questions,
     grade_quiz,
     generate_pdf,
@@ -68,14 +68,15 @@ def main():
 
         if source_option == "Upload YAML file":
             uploaded_file = st.file_uploader(
-                "Upload your YAML question bank",
-                type=['yaml', 'yml'],
-                help="Upload a YAML file containing quiz questions"
+                "Upload your question bank",
+                type=['yaml', 'yml', 'md'],
+                help="Upload a YAML or Markdown file containing quiz questions"
             )
 
             if uploaded_file is not None:
                 file_content = uploaded_file.read().decode('utf-8')
-                questions, error = load_yaml_questions(file_content)
+                file_extension = uploaded_file.name.split('.')[-1].lower()
+                questions, error = load_questions(file_content, file_extension)
 
                 if error:
                     st.error(f"Error loading questions: {error}")
@@ -102,7 +103,8 @@ def main():
                         with open(selected_file, 'r', encoding='utf-8') as f:
                             file_content = f.read()
 
-                        questions, error = load_yaml_questions(file_content)
+                        file_extension = selected_file.suffix.lstrip('.').lower()
+                        questions, error = load_questions(file_content, file_extension)
 
                         if error:
                             st.error(f"Error loading questions: {error}")
@@ -181,6 +183,10 @@ def main():
         3. **Click "Start Quiz"** to begin
         4. **Answer all questions** and submit
         5. **Download your results** as a PDF
+
+        ### Supported File Formats:
+        📄 **YAML** (.yaml, .yml) - Structured format
+        📝 **Markdown** (.md) - Human-readable format
 
         ### Supported Question Types:
         - **Multiple Choice (MC):** Select from provided options
