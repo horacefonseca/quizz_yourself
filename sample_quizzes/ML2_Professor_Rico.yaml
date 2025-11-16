@@ -1,0 +1,462 @@
+# Machine Learning II - MDC - Professor Rico - Comprehensive Exam
+# Machine Learning Classification - Comprehensive Assessment
+
+- id: 1
+  question: "What is the range of valid probability values?"
+  type: "mc"
+  options:
+    - "A) Between -1 and 1"
+    - "B) Between 0 and 1"
+    - "C) Between 0 and 100"
+    - "D) Any positive number"
+  correct: "B"
+  explanation: "Probabilities must be between 0 (impossible) and 1 (certain)."
+  chapter: "1.1"
+
+- id: 2
+  question: "If P(event A) = 0.30, what is P(not A)?"
+  type: "mc"
+  options:
+    - "A) 0.30"
+    - "B) 0.50"
+    - "C) 0.70"
+    - "D) 0.90"
+  correct: "C"
+  explanation: "Complement rule: P(not A) = 1 - P(A) = 0.70."
+  chapter: "1.1"
+
+- id: 3
+  question: "Define 'odds' in terms of probability."
+  type: "mc"
+  options:
+    - "A) 1 - P"
+    - "B) P / (1 - P)"
+    - "C) P * (1 - P)"
+    - "D) log(P)"
+  correct: "B"
+  explanation: "Odds are calculated as probability of success divided by probability of failure."
+  chapter: "1.3"
+
+- id: 4
+  question: "What is the output range of the sigmoid function?"
+  type: "mc"
+  options:
+    - "A) (-∞, +∞)"
+    - "B) (0, 1)"
+    - "C) [0, 1]"
+    - "D) (-1, 1)"
+  correct: "B"
+  explanation: "Sigmoid squashes any input into the probability range between 0 and 1."
+  chapter: "1.4"
+
+- id: 5
+  question: "What distinguishes classification from regression?"
+  type: "mc"
+  options:
+    - "A) Number of features used"
+    - "B) Classification predicts categorical outcomes, regression predicts continuous"
+    - "C) Classification is always more accurate"
+    - "D) Regression cannot use multiple features"
+  correct: "B"
+  explanation: "Classification predicts discrete categories; regression predicts continuous numerical values."
+  chapter: "3"
+
+- id: 6
+  question: "Define binary classification."
+  type: "open"
+  answer: "Classification with exactly two possible class labels"
+  explanation: "Binary classification has exactly two possible outcomes, like yes/no or positive/negative."
+  chapter: "3"
+
+- id: 7
+  question: "What is class imbalance?"
+  type: "mc"
+  options:
+    - "A) Features with different scales"
+    - "B) Unequal number of samples across classes"
+    - "C) Model bias"
+    - "D) Overlapping classes"
+  correct: "B"
+  explanation: "One class has significantly fewer samples than others in the dataset."
+  chapter: "3"
+
+- id: 8
+  question: "Why does linear regression fail for binary outcomes?"
+  type: "mc"
+  options:
+    - "A) It's too slow"
+    - "B) It can predict values outside [0,1] range"
+    - "C) It requires categorical inputs"
+    - "D) It cannot handle two classes"
+  correct: "B"
+  explanation: "Linear regression can output values outside the valid probability range of 0-1."
+  chapter: "4"
+
+- id: 9
+  question: "Write the logistic regression equation in terms of log-odds."
+  type: "mc"
+  options:
+    - "A) P(Y=1) = β₀ + β₁X"
+    - "B) log(P) = β₀ + β₁X"
+    - "C) log(P/(1-P)) = β₀ + β₁X"
+    - "D) P/(1-P) = β₀ + β₁X"
+  correct: "C"
+  explanation: "This is the logit form: log(odds) = log(P/(1-P)) = β₀ + β₁X."
+  chapter: "4"
+
+- id: 10
+  question: "Define odds ratio."
+  type: "open"
+  answer: "The ratio of odds for different feature values"
+  explanation: "Odds ratio compares odds at two different feature values."
+  chapter: "5"
+
+- id: 11
+  question: "What is a confusion matrix?"
+  type: "mc"
+  options:
+    - "A) A matrix of model parameters"
+    - "B) A table showing actual vs predicted classifications"
+    - "C) A correlation matrix"
+    - "D) A matrix of feature importances"
+  correct: "B"
+  explanation: "Confusion matrix shows counts of actual vs predicted classes in a table."
+  chapter: "6"
+
+- id: 12
+  question: "Define precision (positive predictive value)."
+  type: "mc"
+  options:
+    - "A) TP / (TP + FN)"
+    - "B) TP / (TP + FP)"
+    - "C) TN / (TN + FP)"
+    - "D) (TP + TN) / Total"
+  correct: "B"
+  explanation: "Precision measures how many positive predictions were actually correct."
+  chapter: "6"
+
+- id: 13
+  question: "Define recall (sensitivity, true positive rate)."
+  type: "mc"
+  options:
+    - "A) TP / (TP + FP)"
+    - "B) TP / (TP + FN)"
+    - "C) TN / (TN + FN)"
+    - "D) FP / (FP + TN)"
+  correct: "B"
+  explanation: "Recall measures what fraction of actual positives were correctly identified."
+  chapter: "6"
+
+- id: 14
+  question: "What is the F1-score and when is it useful?"
+  type: "mc"
+  options:
+    - "A) Average of precision and recall"
+    - "B) Harmonic mean of precision and recall, useful for imbalanced data"
+    - "C) Product of precision and recall"
+    - "D) Maximum of precision and recall"
+  correct: "B"
+  explanation: "F1-score is harmonic mean balancing precision and recall for imbalanced datasets."
+  chapter: "6"
+
+- id: 15
+  question: "What does AUC = 0.5 indicate?"
+  type: "mc"
+  options:
+    - "A) Perfect classification"
+    - "B) Random guessing / no discrimination"
+    - "C) 50% accuracy"
+    - "D) Excellent performance"
+  correct: "B"
+  explanation: "AUC of 0.5 means model performs no better than random chance."
+  chapter: "6"
+
+- id: 16
+  question: "What is cross-validation?"
+  type: "mc"
+  options:
+    - "A) Training on entire dataset"
+    - "B) Splitting data into folds for robust evaluation"
+    - "C) Testing on training data"
+    - "D) Validating feature names"
+  correct: "B"
+  explanation: "Cross-validation splits data into multiple folds for more robust performance estimation."
+  chapter: "7"
+
+- id: 17
+  question: "What is K-fold cross-validation?"
+  type: "open"
+  answer: "Splitting data into K folds, training on K-1, testing on 1"
+  explanation: "Data divided into K parts; train on K-1, test on 1, repeat K times."
+  chapter: "7"
+
+- id: 18
+  question: "What is the regularization parameter C in logistic regression?"
+  type: "mc"
+  options:
+    - "A) Number of classes"
+    - "B) Inverse of regularization strength"
+    - "C) Learning rate"
+    - "D) Number of iterations"
+  correct: "B"
+  explanation: "C controls regularization strength; smaller C means stronger regularization."
+  chapter: "7"
+
+- id: 19
+  question: "What does class_weight='balanced' do?"
+  type: "mc"
+  options:
+    - "A) Removes minority class"
+    - "B) Automatically adjusts weights inversely proportional to class frequencies"
+    - "C) Balances feature scales"
+    - "D) Creates equal-sized classes"
+  correct: "B"
+  explanation: "Automatically assigns higher weights to minority class to balance importance."
+  chapter: "8"
+
+- id: 20
+  question: "What is SMOTE?"
+  type: "mc"
+  options:
+    - "A) A regularization technique"
+    - "B) Synthetic Minority Over-sampling Technique"
+    - "C) A feature selection method"
+    - "D) A type of neural network"
+  correct: "B"
+  explanation: "SMOTE generates synthetic minority class samples using nearest neighbor interpolation."
+  chapter: "8"
+
+- id: 21
+  question: "What does StandardScaler do?"
+  type: "mc"
+  options:
+    - "A) Scales to [0,1]"
+    - "B) Transforms features to mean=0, std=1"
+    - "C) Normalizes to unit length"
+    - "D) Removes outliers"
+  correct: "B"
+  explanation: "Subtracts mean and divides by standard deviation: z-score normalization."
+  chapter: "9"
+
+- id: 22
+  question: "What is multiclass classification?"
+  type: "mc"
+  options:
+    - "A) Classification with multiple features"
+    - "B) Classification with more than two classes"
+    - "C) Classification using multiple models"
+    - "D) Binary classification repeated"
+  correct: "B"
+  explanation: "Classification problem with three or more mutually exclusive class categories."
+  chapter: "13"
+
+- id: 23
+  question: "What is the softmax function?"
+  type: "mc"
+  options:
+    - "A) A type of regularization"
+    - "B) Generalizes sigmoid to multiple classes, outputs probability distribution"
+    - "C) A loss function"
+    - "D) A feature scaling method"
+  correct: "B"
+  explanation: "Softmax converts raw scores into probability distribution summing to one."
+  chapter: "14"
+
+- id: 24
+  question: "How does a decision tree make predictions?"
+  type: "mc"
+  options:
+    - "A) Using linear equations"
+    - "B) Following if-then rules from root to leaf"
+    - "C) Calculating probabilities only"
+    - "D) Random selection"
+  correct: "B"
+  explanation: "Follows if-then decision rules from root to leaf node containing prediction."
+  chapter: "16"
+
+- id: 25
+  question: "What is the Gini impurity?"
+  type: "mc"
+  options:
+    - "A) Measure of tree size"
+    - "B) Measure of class mixture/impurity in a node"
+    - "C) Number of mistakes"
+    - "D) Training accuracy"
+  correct: "B"
+  explanation: "Gini measures probability of incorrectly classifying a randomly chosen element."
+  chapter: "16"
+
+- id: 26
+  question: "Define pruning in decision trees."
+  type: "open"
+  answer: "Removing branches to reduce overfitting"
+  explanation: "Removing tree branches to reduce complexity and prevent overfitting."
+  chapter: "17"
+
+- id: 27
+  question: "What is ensemble learning?"
+  type: "mc"
+  options:
+    - "A) Training one large model"
+    - "B) Combining predictions from multiple models for better performance"
+    - "C) Using multiple features"
+    - "D) Training on multiple datasets separately"
+  correct: "B"
+  explanation: "Combining predictions from multiple models to improve overall performance."
+  chapter: "18"
+
+- id: 28
+  question: "What is bagging?"
+  type: "mc"
+  options:
+    - "A) Removing bad samples"
+    - "B) Bootstrap Aggregating - training on random samples with replacement"
+    - "C) Selecting best features"
+    - "D) Combining test results"
+  correct: "B"
+  explanation: "Training multiple models on random samples with replacement, then averaging predictions."
+  chapter: "18"
+
+- id: 29
+  question: "How does Random Forest work?"
+  type: "mc"
+  options:
+    - "A) One deep decision tree"
+    - "B) Ensemble of decision trees with random feature subsets"
+    - "C) Linear combination of features"
+    - "D) Sequential tree building"
+  correct: "B"
+  explanation: "Ensemble of decision trees using bootstrap samples and random feature subsets."
+  chapter: "18"
+
+- id: 30
+  question: "What is boosting?"
+  type: "mc"
+  options:
+    - "A) Training identical models"
+    - "B) Sequential training where each model corrects previous errors"
+    - "C) Increasing dataset size"
+    - "D) Removing weak features"
+  correct: "B"
+  explanation: "Sequential ensemble where each model focuses on correcting previous models' errors."
+  chapter: "19"
+
+- id: 31
+  question: "How do you import NumPy with standard alias?"
+  type: "mc"
+  options:
+    - "A) import numpy"
+    - "B) import numpy as np"
+    - "C) from numpy import *"
+    - "D) import np"
+  correct: "B"
+  explanation: "Standard convention: import numpy as np for brevity."
+  chapter: "All"
+
+- id: 32
+  question: "How do you create a NumPy array from a list?"
+  type: "mc"
+  options:
+    - "A) np.list([1,2,3])"
+    - "B) np.array([1,2,3])"
+    - "C) np.create([1,2,3])"
+    - "D) numpy.list([1,2,3])"
+  correct: "B"
+  explanation: "np.array() converts Python lists to NumPy arrays."
+  chapter: "Basics"
+
+- id: 33
+  question: "How do you import pandas with standard alias?"
+  type: "mc"
+  options:
+    - "A) import pandas"
+    - "B) import pandas as pd"
+    - "C) from pandas import *"
+    - "D) import pd"
+  correct: "B"
+  explanation: "Standard convention: import pandas as pd for brevity."
+  chapter: "All"
+
+- id: 34
+  question: "What does .head() show?"
+  type: "mc"
+  options:
+    - "A) Only data types"
+    - "B) First 5 rows by default"
+    - "C) Statistical summary"
+    - "D) Column names"
+  correct: "B"
+  explanation: "df.head() shows first 5 rows by default; optional argument for different number."
+  chapter: "Basics"
+
+- id: 35
+  question: "How do you import train_test_split?"
+  type: "mc"
+  options:
+    - "A) from sklearn import train_test_split"
+    - "B) from sklearn.model_selection import train_test_split"
+    - "C) from sklearn.split import train_test_split"
+    - "D) import sklearn.train_test_split"
+  correct: "B"
+  explanation: "Import train_test_split from sklearn.model_selection submodule."
+  chapter: "Model Selection"
+
+- id: 36
+  question: "What does test_size=0.2 mean?"
+  type: "mc"
+  options:
+    - "A) 2% for testing"
+    - "B) 20% for testing, 80% for training"
+    - "C) 0.2 samples for testing"
+    - "D) 20 samples for testing"
+  correct: "B"
+  explanation: "20% of data for testing, 80% for training."
+  chapter: "Model Selection"
+
+- id: 37
+  question: "How do you import confusion_matrix?"
+  type: "mc"
+  options:
+    - "A) from sklearn import confusion_matrix"
+    - "B) from sklearn.metrics import confusion_matrix"
+    - "C) from sklearn.evaluation import confusion_matrix"
+    - "D) import sklearn.confusion_matrix"
+  correct: "B"
+  explanation: "Import confusion_matrix from sklearn.metrics for evaluation."
+  chapter: "Metrics"
+
+- id: 38
+  question: "What is the shape of a binary confusion matrix?"
+  type: "mc"
+  options:
+    - "A) (1, 2)"
+    - "B) (2, 2)"
+    - "C) (2, 1)"
+    - "D) (4, 4)"
+  correct: "B"
+  explanation: "2x2 matrix for binary classification: rows actual, columns predicted."
+  chapter: "Metrics"
+
+- id: 39
+  question: "How do you import LogisticRegression?"
+  type: "mc"
+  options:
+    - "A) from sklearn import LogisticRegression"
+    - "B) from sklearn.linear_model import LogisticRegression"
+    - "C) from sklearn.models import LogisticRegression"
+    - "D) import sklearn.LogisticRegression"
+  correct: "B"
+  explanation: "Import LogisticRegression from sklearn.linear_model for classification."
+  chapter: "Models"
+
+- id: 40
+  question: "What does predict_proba() return?"
+  type: "mc"
+  options:
+    - "A) Class labels"
+    - "B) Probability estimates for each class"
+    - "C) Binary predictions"
+    - "D) Confidence intervals"
+  correct: "B"
+  explanation: "Returns probability estimates for each class as 2D array."
+  chapter: "Models"
