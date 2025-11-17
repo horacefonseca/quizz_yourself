@@ -61,12 +61,12 @@ def main():
 
         source_option = st.radio(
             "Choose question source:",
-            ["Upload YAML file", "Use bundled quiz"]
+            ["Upload YAML/Markdown file", "Paste Gemini-formatted text", "Use bundled quiz"]
         )
 
         questions_loaded = False
 
-        if source_option == "Upload YAML file":
+        if source_option == "Upload YAML/Markdown file":
             uploaded_file = st.file_uploader(
                 "Upload your question bank",
                 type=['yaml', 'yml', 'md'],
@@ -84,6 +84,94 @@ def main():
                     st.session_state.questions = questions
                     questions_loaded = True
                     st.success(f"✅ Loaded {len(questions)} questions!")
+
+        elif source_option == "Paste Gemini-formatted text":
+            st.info("💡 **Instructions:** Use Gemini to format your raw text, then paste the result here")
+
+            # Expandable instructions
+            with st.expander("📋 Click to view Gemini Instructions (Copy & Paste to Gemini)"):
+                gemini_instructions = """**Copy this entire prompt and paste it to Gemini along with your raw text:**
+
+---
+
+INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
+====================================================
+
+Please convert the following raw text into a structured quiz format. Follow these rules EXACTLY:
+
+FORMAT RULES:
+1. Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
+2. Each question must have these fields (one per line):
+   - Type: (either "mc" for multiple choice or "open" for open-ended)
+   - Question: (the question text)
+
+   FOR MULTIPLE CHOICE (mc):
+   - A) (first option)
+   - B) (second option)
+   - C) (third option)
+   - D) (fourth option)
+   - Correct: (the correct letter: A, B, C, or D)
+
+   FOR OPEN-ENDED (open):
+   - Answer: (the correct answer text)
+
+   OPTIONAL FIELDS (for both types):
+   - Explanation: (5-15 words explaining why the answer is correct)
+   - Chapter: (chapter or topic reference)
+
+3. Leave a blank line between questions
+4. Use EXACTLY this format - no extra formatting, no bold, no italics
+
+EXAMPLE OUTPUT:
+
+QUESTION 1
+Type: mc
+Question: What is the range of valid probability values?
+A) Between -1 and 1
+B) Between 0 and 1
+C) Between 0 and 100
+D) Any positive number
+Correct: B
+Explanation: Probabilities must be between 0 (impossible) and 1 (certain).
+Chapter: 1.1
+
+QUESTION 2
+Type: open
+Question: Define binary classification.
+Answer: Classification with exactly two possible class labels
+Explanation: Binary classification has exactly two possible outcomes.
+Chapter: 3
+
+NOW FORMAT THE FOLLOWING TEXT:
+-----------------------------------
+[Paste your raw text here]
+"""
+                st.code(gemini_instructions, language=None)
+                st.caption("After Gemini generates the formatted output, copy it and paste below ⬇️")
+
+            # Text area for pasting Gemini output (20,000 words ≈ 120,000 characters)
+            gemini_text = st.text_area(
+                "Paste Gemini's formatted output here:",
+                height=300,
+                max_chars=120000,
+                placeholder="Paste the formatted questions from Gemini here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
+            )
+
+            if gemini_text and gemini_text.strip():
+                # Count approximate words
+                word_count = len(gemini_text.split())
+                st.caption(f"📝 Approximately {word_count:,} words pasted")
+
+                # Parse the Gemini-formatted text
+                questions, error = load_questions(gemini_text, 'gemini')
+
+                if error:
+                    st.error(f"❌ Error parsing Gemini format: {error}")
+                    st.info("💡 Make sure you copied the EXACT format from Gemini. Check the instructions above.")
+                else:
+                    st.session_state.questions = questions
+                    questions_loaded = True
+                    st.success(f"✅ Successfully parsed {len(questions)} questions!")
 
         else:  # Use bundled quiz
             # Look for sample quizzes in sample_quizzes folder

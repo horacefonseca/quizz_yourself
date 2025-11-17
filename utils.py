@@ -202,13 +202,108 @@ def load_markdown_questions(file_content: str) -> Tuple[List[Dict[str, Any]], st
         return [], f"Error parsing markdown: {str(e)}"
 
 
+def load_gemini_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]:
+    """
+    Load questions from Gemini-formatted text
+
+    Expected format:
+    QUESTION 1
+    Type: mc
+    Question: What is...?
+    A) Option A
+    B) Option B
+    C) Option C
+    D) Option D
+    Correct: A
+    Explanation: Because...
+    Chapter: 1.1
+
+    Args:
+        file_content: String content formatted by Gemini
+
+    Returns:
+        Tuple of (list of questions, error message if any)
+    """
+    try:
+        questions = []
+
+        # Split by QUESTION pattern
+        question_blocks = re.split(r'\n*QUESTION\s+\d+\s*\n', file_content)
+
+        # Remove empty first element if present
+        if question_blocks and not question_blocks[0].strip():
+            question_blocks.pop(0)
+
+        for idx, block in enumerate(question_blocks, 1):
+            if not block.strip():
+                continue
+
+            question = {
+                'id': idx,
+                'type': '',
+                'question': '',
+                'options': [],
+                'correct': '',
+                'answer': '',
+                'explanation': '',
+                'chapter': ''
+            }
+
+            lines = block.strip().split('\n')
+            i = 0
+
+            while i < len(lines):
+                line = lines[i].strip()
+
+                if line.startswith('Type:'):
+                    question['type'] = line.split(':', 1)[1].strip().lower()
+
+                elif line.startswith('Question:'):
+                    question['question'] = line.split(':', 1)[1].strip()
+
+                elif re.match(r'^[A-D]\)', line):
+                    # Extract option (e.g., "A) Option text")
+                    question['options'].append(line)
+
+                elif line.startswith('Correct:'):
+                    question['correct'] = line.split(':', 1)[1].strip().upper()
+
+                elif line.startswith('Answer:'):
+                    question['answer'] = line.split(':', 1)[1].strip()
+
+                elif line.startswith('Explanation:'):
+                    question['explanation'] = line.split(':', 1)[1].strip()
+
+                elif line.startswith('Chapter:'):
+                    question['chapter'] = line.split(':', 1)[1].strip()
+
+                i += 1
+
+            # Validate and add question
+            if question['question'] and question['type']:
+                if question['type'] == 'mc':
+                    if len(question['options']) >= 2 and question['correct']:
+                        questions.append(question)
+                elif question['type'] == 'open':
+                    if question['answer']:
+                        questions.append(question)
+
+        if not questions:
+            return [], "No valid questions found in Gemini format"
+
+        return questions, ""
+
+    except Exception as e:
+        return [], f"Error parsing Gemini format: {str(e)}"
+
+
 def load_questions(file_content: str, file_type: str) -> Tuple[List[Dict[str, Any]], str]:
     """
-    Load questions from either YAML or Markdown format
+    Load questions from YAML, Markdown, or Gemini format
 
     Args:
         file_content: String content of file
-        file_type: Either 'yaml' or 'markdown'
+        file_type: Either 'yaml', 'markdown', or 'gemini'
 
     Returns:
         Tuple of (list of questions, error message if any)
@@ -217,6 +312,8 @@ def load_questions(file_content: str, file_type: str) -> Tuple[List[Dict[str, An
         return load_yaml_questions(file_content)
     elif file_type.lower() in ['markdown', 'md']:
         return load_markdown_questions(file_content)
+    elif file_type.lower() == 'gemini':
+        return load_gemini_questions(file_content)
     else:
         return [], f"Unsupported file type: {file_type}"
 

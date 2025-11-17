@@ -1,0 +1,62 @@
+INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
+====================================================
+
+Please convert the following raw text into a structured quiz format. Follow these rules EXACTLY:
+
+FORMAT RULES:
+1. Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
+2. Each question must have these fields (one per line):
+   - Type: (either "mc" for multiple choice or "open" for open-ended)
+   - Question: (the question text)
+
+   FOR MULTIPLE CHOICE (mc):
+   - A) (first option)
+   - B) (second option)
+   - C) (third option)
+   - D) (fourth option)
+   - Correct: (the correct letter: A, B, C, or D)
+
+   FOR OPEN-ENDED (open):
+   - Answer: (the correct answer text)
+
+   OPTIONAL FIELDS (for both types):
+   - Explanation: (5-15 words explaining why the answer is correct)
+   - Chapter: (chapter or topic reference)
+
+3. Leave a blank line between questions
+4. Use EXACTLY this format - no extra formatting, no bold, no italics
+
+EXAMPLE OUTPUT:
+
+QUESTION 1
+Type: mc
+Question: What is the range of valid probability values?
+A) Between -1 and 1
+B) Between 0 and 1
+C) Between 0 and 100
+D) Any positive number
+Correct: B
+Explanation: Probabilities must be between 0 (impossible) and 1 (certain).
+Chapter: 1.1
+
+QUESTION 2
+Type: open
+Question: Define binary classification.
+Answer: Classification with exactly two possible class labels
+Explanation: Binary classification has exactly two possible outcomes.
+Chapter: 3
+
+QUESTION 3
+Type: mc
+Question: What is the output range of the sigmoid function?
+A) (-∞, +∞)
+B) (0, 1)
+C) [0, 1]
+D) (-1, 1)
+Correct: B
+Explanation: Sigmoid squashes any input into probability range 0 to 1.
+Chapter: 1.4
+
+NOW FORMAT THE FOLLOWING TEXT:
+-----------------------------------
+[Paste your raw text here]

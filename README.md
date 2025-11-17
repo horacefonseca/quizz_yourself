@@ -5,6 +5,7 @@ A flexible, interactive quiz application built with Streamlit that works with an
 ## Features
 
 - **Universal Format Support**: Works with any properly formatted YAML or Markdown question bank
+- **Raw Text Processing**: Paste unstructured text formatted by Gemini AI for instant conversion
 - **Two Question Types**:
   - Multiple Choice (MC)
   - Open-ended questions
@@ -72,7 +73,7 @@ A curated selection of essential questions:
 
 ## Question Bank Formats
 
-The app supports **two file formats**: YAML and Markdown.
+The app supports **three input methods**: YAML files, Markdown files, and Gemini-formatted text.
 
 ### Format 1: YAML (.yaml, .yml)
 
@@ -156,7 +157,55 @@ Define Logistic Regression
 
 ---
 
-### Required Fields (Both Formats):
+### Format 3: Gemini-Formatted Text (Raw Text Paste)
+
+**Use Case:** Convert unstructured raw text into quiz questions using Gemini AI
+
+**Workflow:**
+1. Copy the Gemini instructions from the app (click "Paste Gemini-formatted text" option)
+2. Paste instructions + your raw text into Gemini AI
+3. Copy Gemini's formatted output
+4. Paste into the app's text area (up to 20,000 words)
+5. App automatically parses and loads questions
+
+**Format Requirements:** Simple structured text format
+
+#### Multiple Choice Question Example:
+```
+QUESTION 1
+Type: mc
+Question: What is the range of valid probability values?
+A) Between -1 and 1
+B) Between 0 and 1
+C) Between 0 and 100
+D) Any positive number
+Correct: B
+Explanation: Probabilities must be between 0 (impossible) and 1 (certain).
+Chapter: 1.1
+```
+
+#### Open Question Example:
+```
+QUESTION 2
+Type: open
+Question: Define binary classification.
+Answer: Classification with exactly two possible class labels
+Explanation: Binary classification has exactly two possible outcomes.
+Chapter: 3
+```
+
+#### Gemini Format Notes:
+- Each question starts with `QUESTION` followed by a number
+- Field names followed by colon: `Type:`, `Question:`, `Correct:`, etc.
+- Options listed as `A)`, `B)`, `C)`, `D)` on separate lines
+- Blank line between questions (optional but recommended)
+- No special formatting - plain text only
+- **Benefit:** Users process raw text with their own Gemini account, maintaining privacy
+- **Limit:** Up to 20,000 words (approximately 120,000 characters)
+
+---
+
+### Required Fields (All Formats):
 - **id**: Unique question identifier (integer)
 - **question**: Question text (string)
 - **type**: Question type - either "mc" or "open"
@@ -264,7 +313,8 @@ Define Logistic Regression
    - Choose "Use bundled quiz" and select:
      - **ML Classification Complete (250 questions)** for comprehensive assessment
      - **ML2 Professor Rico Sample (40 questions)** for quick practice
-   - OR Choose "Upload YAML file" to use your own questions
+   - OR Choose "Upload YAML/Markdown file" to use your own structured questions
+   - OR Choose "Paste Gemini-formatted text" to convert raw text using Gemini AI
 
 3. **Configure Quiz Length**
    - Use the percentage slider (10%-100%)
@@ -328,7 +378,8 @@ Tips for creating effective quizzes:
 **Question bank won't load**
 - **For YAML**: Check for proper indentation (use spaces, not tabs), validate at yamllint.com
 - **For Markdown**: Ensure questions are separated by `---`, field names use bold syntax `**Field:**`
-- Ensure all required fields are present for both formats
+- **For Gemini format**: Ensure each question starts with `QUESTION N`, field names use colon format `Type:`, `Question:`
+- Ensure all required fields are present for all formats
 
 **App crashes on deployment**
 - Verify requirements.txt matches your local environment
