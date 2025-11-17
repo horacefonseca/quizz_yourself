@@ -92,46 +92,36 @@ def main():
     questions_loaded = False
 
     if source_option == "Paste ChatGPT-formatted text":
-        # CHATGPT WORKFLOW IN CENTER - New 2-step process
+        # CHATGPT WORKFLOW IN CENTER - All boxes visible
         st.header("📝 Create Quiz from Raw Text with ChatGPT AI")
 
         # Visual workflow diagram
         st.info("""
-**📋 Workflow Steps:**
+**📋 Simple 3-Step Workflow:**
 
-**Step 1** → Paste your raw text below
-**Step 2** → Click "Generate Prompt" to combine instructions + your text
-**Step 3** → Copy the combined prompt
-**Step 4** → Open ChatGPT and paste it there
-**Step 5** → Copy ChatGPT's formatted output
-**Step 6** → Paste ChatGPT's output in the final box below
+**Box 1** → Paste your raw text, click "Generate Prompt"
+**Box 2** → Copy the combined prompt, paste in ChatGPT
+**Box 3** → Copy ChatGPT's output, paste here, click "Parse Questions"
         """)
 
         st.markdown("---")
 
-        # STEP 1: User pastes raw text
-        st.subheader("Step 1: Paste Your Raw Text")
+        # ============================================================
+        # BOX 1: Raw Text Input (Always Visible)
+        # ============================================================
+        st.subheader("📝 Box 1: Your Raw Text")
         user_raw_text = st.text_area(
-            "Enter your raw quiz content here:",
-            height=200,
+            "Paste your raw quiz content here:",
+            height=150,
             placeholder="Example:\n\nWhat is the capital of France?\nParis is the capital\n\nWho wrote Romeo and Juliet?\nShakespeare wrote it\n...",
-            key="user_raw_text_input"
+            key="user_raw_text_input",
+            help="Paste any unformatted text. We'll convert it to quiz format."
         )
 
-        # Show preview of pasted text (last 4 lines)
+        # Generate button
         if user_raw_text and user_raw_text.strip():
-            lines = user_raw_text.strip().split('\n')
-            if len(lines) > 4:
-                preview_lines = lines[-4:]
-                st.caption(f"📝 {len(lines)} lines pasted. Showing last 4 lines:")
-                st.code('\n'.join(preview_lines), language=None)
-            else:
-                st.caption(f"📝 {len(lines)} lines pasted")
-
-        # STEP 2: Generate combined prompt
-        if user_raw_text and user_raw_text.strip():
-            if st.button("📝 Generate Combined Prompt", type="primary", use_container_width=True):
-                # Store in session state
+            if st.button("🔄 Generate Combined Prompt", type="primary", use_container_width=True):
+                # Create the combined prompt
                 st.session_state.combined_prompt = f"""Please convert the following raw text into a structured quiz format and coding text format ready to cut and paste with indentations. Follow these rules EXACTLY:
 
 FORMAT RULES:
@@ -183,93 +173,90 @@ RAW TEXT TO CONVERT:
 
 {user_raw_text}"""
                 st.rerun()
+        else:
+            st.caption("👆 Paste your text above and click the button to generate the prompt")
 
-        # STEP 3-4: Show combined prompt with copy and ChatGPT buttons
-        if 'combined_prompt' in st.session_state and st.session_state.combined_prompt:
-            st.markdown("---")
-            st.subheader("Step 2: Copy & Paste to ChatGPT")
+        st.markdown("---")
 
-            st.success("✅ Combined prompt generated! Now:")
+        # ============================================================
+        # BOX 2: Combined Prompt (Always Visible)
+        # ============================================================
+        st.subheader("📋 Box 2: Combined Prompt for ChatGPT")
 
-            # Show the combined prompt with clear copy instructions
-            with st.expander("📋 **STEP 1: COPY THIS PROMPT**", expanded=True):
-                st.info("👉 Click inside the text box below, press **Ctrl+A** (select all), then **Ctrl+C** (copy)")
+        # Get the prompt value (either from session state or empty)
+        prompt_value = st.session_state.get('combined_prompt', '')
 
-                # Show the combined prompt in a text area for easy copying
-                st.text_area(
-                    "Combined Prompt (click here, then Ctrl+A to select all, Ctrl+C to copy):",
-                    value=st.session_state.combined_prompt,
-                    height=400,
-                    key="combined_prompt_display"
-                )
+        combined_prompt_area = st.text_area(
+            "Copy this entire prompt (Ctrl+A, Ctrl+C) and paste it into ChatGPT:",
+            value=prompt_value,
+            height=300,
+            key="combined_prompt_display_visible",
+            help="This combines the formatting instructions with your raw text. Copy everything and paste into ChatGPT.",
+            placeholder="👈 First paste your raw text in Box 1 and click 'Generate Combined Prompt'. The combined prompt will appear here."
+        )
 
-            # Action button in prominent location
-            st.markdown("### 🤖 STEP 2: OPEN CHATGPT & PASTE")
+        # ChatGPT button
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            chatgpt_button_html = """
+            <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
+                <button style="
+                    background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+                    color: white;
+                    padding: 12px 20px;
+                    font-size: 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    width: 100%;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='scale(1.05)'"
+                   onmouseout="this.style.transform='scale(1)'">
+                    🤖 Open ChatGPT
+                </button>
+            </a>
+            """
+            st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+        with col2:
+            st.caption("Click to open ChatGPT, paste the prompt above, get the formatted output")
 
-            col1, col2 = st.columns([1, 2])
+        st.markdown("---")
 
-            with col1:
-                chatgpt_button_html = """
-                <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
-                    <button style="
-                        background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
-                        color: white;
-                        padding: 16px 24px;
-                        font-size: 18px;
-                        border: none;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        width: 100%;
-                        font-weight: bold;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        transition: all 0.3s;
-                    " onmouseover="this.style.transform='scale(1.05)'"
-                       onmouseout="this.style.transform='scale(1)'">
-                        🤖 Open ChatGPT
-                    </button>
-                </a>
-                """
-                st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+        # ============================================================
+        # BOX 3: ChatGPT Output (Always Visible)
+        # ============================================================
+        st.subheader("✅ Box 3: Paste ChatGPT's Output Here")
+        chatgpt_output = st.text_area(
+            "After ChatGPT formats your questions, paste the complete output here:",
+            height=300,
+            max_chars=120000,
+            placeholder="Paste ChatGPT's formatted output here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\nC) Option C\nD) Option D\nCorrect: A\nExplanation: ...\nChapter: ...\n\nQUESTION 2\n...",
+            key="chatgpt_output_input",
+            help="Paste the complete formatted output from ChatGPT here."
+        )
 
-            with col2:
-                st.write("Click to open ChatGPT, then paste the prompt you copied above (Ctrl+V)")
+        if chatgpt_output and chatgpt_output.strip():
+            # Show stats
+            lines = chatgpt_output.strip().split('\n')
+            word_count = len(chatgpt_output.split())
+            st.caption(f"📝 {len(lines)} lines pasted ({word_count:,} words)")
 
-            st.markdown("---")
+            # Parse button
+            if st.button("🔍 Parse Questions", type="primary", use_container_width=True):
+                questions, error = load_questions(chatgpt_output, 'gemini')
 
-            # STEP 5-6: Paste ChatGPT output
-            st.subheader("Step 3: Paste ChatGPT's Output")
-            chatgpt_output = st.text_area(
-                "After ChatGPT formats your questions, paste the output here:",
-                height=300,
-                max_chars=120000,
-                placeholder="Paste ChatGPT's formatted output here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n...",
-                key="chatgpt_output_input"
-            )
-
-            if chatgpt_output and chatgpt_output.strip():
-                # Show preview (last 4 lines)
-                lines = chatgpt_output.strip().split('\n')
-                word_count = len(chatgpt_output.split())
-
-                st.caption(f"📝 {len(lines)} lines pasted ({word_count:,} words)")
-
-                if len(lines) > 4:
-                    preview_lines = lines[-4:]
-                    with st.expander("👁️ Preview (last 4 lines)", expanded=False):
-                        st.code('\n'.join(preview_lines), language=None)
-
-                # Parse button
-                if st.button("🔍 Parse Questions", type="primary", use_container_width=True):
-                    questions, error = load_questions(chatgpt_output, 'gemini')
-
-                    if error:
-                        st.error(f"❌ Error parsing format: {error}")
-                        st.info("💡 Make sure you copied the EXACT format from ChatGPT.")
-                    else:
-                        st.session_state.questions = questions
-                        questions_loaded = True
-                        st.success(f"✅ Successfully parsed {len(questions)} questions!")
-                        st.balloons()
+                if error:
+                    st.error(f"❌ Error parsing format: {error}")
+                    st.info("💡 Make sure you copied the EXACT format from ChatGPT.")
+                else:
+                    st.session_state.questions = questions
+                    questions_loaded = True
+                    st.success(f"✅ Successfully parsed {len(questions)} questions!")
+                    st.balloons()
+        else:
+            st.caption("👆 Paste ChatGPT's output above and click 'Parse Questions'")
 
     # Other options stay in sidebar
     with st.sidebar:
