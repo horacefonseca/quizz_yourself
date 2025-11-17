@@ -34,6 +34,18 @@ if 'quiz_submitted' not in st.session_state:
     st.session_state.quiz_submitted = False
 if 'grading_results' not in st.session_state:
     st.session_state.grading_results = None
+if 'random_seed' not in st.session_state:
+    st.session_state.random_seed = None
+if 'timer_enabled' not in st.session_state:
+    st.session_state.timer_enabled = False
+if 'timer_per_question' not in st.session_state:
+    st.session_state.timer_per_question = 30
+if 'include_open_questions' not in st.session_state:
+    st.session_state.include_open_questions = True
+if 'quiz_start_time' not in st.session_state:
+    st.session_state.quiz_start_time = None
+if 'open_question_grades' not in st.session_state:
+    st.session_state.open_question_grades = {}
 
 
 def reset_quiz():
@@ -43,6 +55,8 @@ def reset_quiz():
     st.session_state.user_answers = {}
     st.session_state.quiz_submitted = False
     st.session_state.grading_results = None
+    st.session_state.quiz_start_time = None
+    st.session_state.open_question_grades = {}
 
 
 def main():
@@ -56,6 +70,13 @@ def main():
     with st.sidebar:
         st.header("Quiz Setup")
 
+        # Reset button - always visible
+        if st.button("🔄 Reset & Start Over", use_container_width=True, type="secondary"):
+            reset_quiz()
+            st.rerun()
+
+        st.markdown("---")
+
         # Step 1: Question Bank Selection
         st.subheader("1. Select Question Bank")
 
@@ -68,12 +89,36 @@ def main():
     questions_loaded = False
 
     if source_option == "Paste ChatGPT-formatted text":
-        # CHATGPT WORKFLOW IN CENTER (moved from sidebar)
+        # CHATGPT WORKFLOW IN CENTER - New 2-step process
         st.header("📝 Create Quiz from Raw Text with ChatGPT AI")
-        st.info("💡 **Quick Steps:** 1️⃣ Copy instructions → 2️⃣ Open ChatGPT → 3️⃣ Paste & add your text → 4️⃣ Copy result back here")
 
-        # ChatGPT instructions
-        gemini_instructions = """Please convert the following raw text into a structured quiz format and coding text format ready to cut and paste with indentations. Follow these rules EXACTLY:
+        # Visual workflow diagram
+        st.info("""
+**📋 Workflow Steps:**
+
+**Step 1** → Paste your raw text below
+**Step 2** → Click "Generate Prompt" to combine instructions + your text
+**Step 3** → Copy the combined prompt
+**Step 4** → Open ChatGPT and paste it there
+**Step 5** → Copy ChatGPT's formatted output
+**Step 6** → Paste ChatGPT's output in the final box below
+        """)
+
+        st.markdown("---")
+
+        # STEP 1: User pastes raw text
+        st.subheader("Step 1: Paste Your Raw Text")
+        user_raw_text = st.text_area(
+            "Enter your raw quiz content here:",
+            height=200,
+            placeholder="Example:\n\nWhat is the capital of France?\nParis is the capital\n\nWho wrote Romeo and Juliet?\nShakespeare wrote it\n..."
+        )
+
+        # STEP 2: Generate combined prompt
+        if user_raw_text and user_raw_text.strip():
+            if st.button("📝 Generate Combined Prompt", type="primary", use_container_width=True):
+                # Store in session state
+                st.session_state.combined_prompt = f"""Please convert the following raw text into a structured quiz format and coding text format ready to cut and paste with indentations. Follow these rules EXACTLY:
 
 FORMAT RULES:
 Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
@@ -119,55 +164,31 @@ Explanation: Binary classification has exactly two possible outcomes.
 Chapter: 3
 
 ====================================================
-[Paste your raw text here]"""
+RAW TEXT TO CONVERT:
+====================================================
 
-        # Action buttons row
-        col1, col2 = st.columns([1, 1])
+{user_raw_text}"""
+                st.rerun()
 
-        with col1:
-            # Copy button with JavaScript
-            copy_button_html = f"""
-            <button onclick="copyToClipboard()" style="
-                background-color: #4CAF50;
-                color: white;
-                padding: 12px 24px;
-                font-size: 16px;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                width: 100%;
-                font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                transition: all 0.3s;
-            " onmouseover="this.style.backgroundColor='#45a049'"
-               onmouseout="this.style.backgroundColor='#4CAF50'">
-                📋 Copy Instructions
-            </button>
-            <textarea id="gemini-instructions" style="position: absolute; left: -9999px;">{gemini_instructions}</textarea>
-            <p id="copy-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
-            <script>
-            function copyToClipboard() {{
-                var copyText = document.getElementById("gemini-instructions");
-                copyText.style.position = "static";
-                copyText.select();
-                copyText.setSelectionRange(0, 99999);
-                document.execCommand("copy");
-                copyText.style.position = "absolute";
-                document.getElementById("copy-status").innerHTML = "✅ Copied to clipboard!";
-                setTimeout(function() {{
-                    document.getElementById("copy-status").innerHTML = "";
-                }}, 3000);
-            }}
-            </script>
-            """
-            st.markdown(copy_button_html, unsafe_allow_html=True)
+        # STEP 3-4: Show combined prompt with copy and ChatGPT buttons
+        if 'combined_prompt' in st.session_state and st.session_state.combined_prompt:
+            st.markdown("---")
+            st.subheader("Step 2: Copy & Paste to ChatGPT")
 
-        with col2:
-            # ChatGPT link button
-            chatgpt_button_html = """
-            <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
-                <button style="
-                    background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+            st.success("✅ Combined prompt generated! Now:")
+
+            # Show the combined prompt
+            with st.expander("📖 View Combined Prompt", expanded=True):
+                st.code(st.session_state.combined_prompt, language=None)
+
+            # Action buttons
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                # Copy button
+                copy_button_html = f"""
+                <button onclick="copyPrompt()" style="
+                    background-color: #4CAF50;
                     color: white;
                     padding: 12px 24px;
                     font-size: 16px;
@@ -178,43 +199,81 @@ Chapter: 3
                     font-weight: bold;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                     transition: all 0.3s;
-                " onmouseover="this.style.transform='scale(1.05)'"
-                   onmouseout="this.style.transform='scale(1)'">
-                    🤖 Open ChatGPT
+                " onmouseover="this.style.backgroundColor='#45a049'"
+                   onmouseout="this.style.backgroundColor='#4CAF50'">
+                    📋 Copy Combined Prompt
                 </button>
-            </a>
-            """
-            st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+                <textarea id="combined-prompt" style="position: absolute; left: -9999px;">{st.session_state.combined_prompt}</textarea>
+                <p id="copy-prompt-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
+                <script>
+                function copyPrompt() {{
+                    var copyText = document.getElementById("combined-prompt");
+                    copyText.style.position = "static";
+                    copyText.select();
+                    copyText.setSelectionRange(0, 999999);
+                    document.execCommand("copy");
+                    copyText.style.position = "absolute";
+                    document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
+                    setTimeout(function() {{
+                        document.getElementById("copy-prompt-status").innerHTML = "";
+                    }}, 3000);
+                }}
+                </script>
+                """
+                st.markdown(copy_button_html, unsafe_allow_html=True)
 
-        # Expandable view of instructions (optional, for reference)
-        with st.expander("📖 View Full Instructions"):
-            st.code(gemini_instructions, language=None)
+            with col2:
+                # ChatGPT link button
+                chatgpt_button_html = """
+                <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
+                    <button style="
+                        background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+                        color: white;
+                        padding: 12px 24px;
+                        font-size: 16px;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        width: 100%;
+                        font-weight: bold;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        transition: all 0.3s;
+                    " onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                        🤖 Open ChatGPT
+                    </button>
+                </a>
+                """
+                st.markdown(chatgpt_button_html, unsafe_allow_html=True)
 
-        st.markdown("---")
+            st.markdown("---")
 
-        # Text area for pasting ChatGPT output (20,000 words ≈ 120,000 characters)
-        chatgpt_text = st.text_area(
-            "Paste ChatGPT's formatted output here:",
-            height=300,
-            max_chars=120000,
-            placeholder="Paste the formatted questions from ChatGPT here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
-        )
+            # STEP 5-6: Paste ChatGPT output
+            st.subheader("Step 3: Paste ChatGPT's Output")
+            chatgpt_output = st.text_area(
+                "After ChatGPT formats your questions, paste the output here:",
+                height=300,
+                max_chars=120000,
+                placeholder="Paste ChatGPT's formatted output here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
+            )
 
-        if chatgpt_text and chatgpt_text.strip():
-            # Count approximate words
-            word_count = len(chatgpt_text.split())
-            st.caption(f"📝 Approximately {word_count:,} words pasted")
+            if chatgpt_output and chatgpt_output.strip():
+                # Count words
+                word_count = len(chatgpt_output.split())
+                st.caption(f"📝 Approximately {word_count:,} words pasted")
 
-            # Parse the ChatGPT-formatted text
-            questions, error = load_questions(chatgpt_text, 'gemini')
+                # Parse button
+                if st.button("🔍 Parse Questions", type="primary", use_container_width=True):
+                    questions, error = load_questions(chatgpt_output, 'gemini')
 
-            if error:
-                st.error(f"❌ Error parsing format: {error}")
-                st.info("💡 Make sure you copied the EXACT format from ChatGPT. Check the instructions above.")
-            else:
-                st.session_state.questions = questions
-                questions_loaded = True
-                st.success(f"✅ Successfully parsed {len(questions)} questions!")
+                    if error:
+                        st.error(f"❌ Error parsing format: {error}")
+                        st.info("💡 Make sure you copied the EXACT format from ChatGPT.")
+                    else:
+                        st.session_state.questions = questions
+                        questions_loaded = True
+                        st.success(f"✅ Successfully parsed {len(questions)} questions!")
+                        st.balloons()
 
     # Other options stay in sidebar
     with st.sidebar:
@@ -306,14 +365,83 @@ Chapter: 3
 
             st.markdown("---")
 
+            # Advanced Settings (for larger quizzes)
+            with st.expander("⚙️ Advanced Quiz Settings"):
+                st.markdown("**Random Seed (for reproducibility)**")
+                use_seed = st.checkbox("Use random seed", value=False)
+                if use_seed:
+                    seed_value = st.number_input(
+                        "Seed value:",
+                        min_value=0,
+                        max_value=9999,
+                        value=42,
+                        help="Same seed = same quiz version every time"
+                    )
+                    st.session_state.random_seed = seed_value
+                else:
+                    st.session_state.random_seed = None
+
+                st.markdown("---")
+
+                st.markdown("**Timer Settings**")
+                st.session_state.timer_enabled = st.checkbox("Enable quiz timer", value=False)
+
+                if st.session_state.timer_enabled:
+                    st.session_state.timer_per_question = st.select_slider(
+                        "Time per question:",
+                        options=[30, 60, 90],
+                        value=30,
+                        format_func=lambda x: f"{x} seconds"
+                    )
+
+                    # Calculate total time
+                    total_time_seconds = final_num * st.session_state.timer_per_question
+                    total_minutes = total_time_seconds // 60
+                    st.info(f"⏱️ Total quiz time: {total_minutes} minutes ({total_time_seconds} seconds)")
+
+                st.markdown("---")
+
+                st.markdown("**Open Questions**")
+                st.session_state.include_open_questions = st.checkbox(
+                    "Include open questions",
+                    value=True,
+                    help="Open questions must be evaluated by instructor"
+                )
+
+                if not st.session_state.include_open_questions:
+                    st.warning("⚠️ Open questions will be excluded from quiz")
+                else:
+                    # Count available open questions
+                    open_count = sum(1 for q in st.session_state.questions if q.get('type') == 'open')
+                    st.caption(f"📝 Available open questions: {open_count}")
+
+            st.markdown("---")
+
             # Start Quiz Button
             if not st.session_state.quiz_started:
                 if st.button("🚀 Start Quiz", use_container_width=True):
-                    # Sample questions
+                    # Filter questions based on settings
+                    available_questions = st.session_state.questions
+
+                    # Filter out open questions if disabled
+                    if not st.session_state.include_open_questions:
+                        available_questions = [q for q in available_questions if q.get('type') != 'open']
+
+                    # Sample questions with optional seed
+                    import random
+                    if st.session_state.random_seed is not None:
+                        random.seed(st.session_state.random_seed)
+
                     st.session_state.quiz_questions = sample_questions(
-                        st.session_state.questions,
-                        final_num
+                        available_questions,
+                        min(final_num, len(available_questions))
                     )
+
+                    # Start timer if enabled
+                    if st.session_state.timer_enabled:
+                        import time
+                        st.session_state.quiz_start_time = time.time()
+
                     st.session_state.quiz_started = True
                     st.session_state.user_answers = {}
                     st.session_state.quiz_submitted = False
@@ -354,6 +482,31 @@ Chapter: 3
     elif not st.session_state.quiz_submitted:
         # Quiz Interface
         st.header(f"Quiz: {len(st.session_state.quiz_questions)} Questions")
+
+        # Timer display (if enabled)
+        if st.session_state.timer_enabled and st.session_state.quiz_start_time:
+            import time
+            elapsed_time = time.time() - st.session_state.quiz_start_time
+            total_allowed = len(st.session_state.quiz_questions) * st.session_state.timer_per_question
+            remaining_time = max(0, total_allowed - int(elapsed_time))
+
+            minutes_left = remaining_time // 60
+            seconds_left = remaining_time % 60
+
+            if remaining_time > 60:
+                timer_color = "🟢"
+            elif remaining_time > 30:
+                timer_color = "🟡"
+            else:
+                timer_color = "🔴"
+
+            st.warning(f"{timer_color} **Time Remaining:** {minutes_left}:{seconds_left:02d} (Total: {total_allowed//60} min)")
+
+            # Auto-refresh every second
+            if remaining_time > 0:
+                st.empty()
+                time.sleep(1)
+                st.rerun()
 
         st.markdown("---")
 
@@ -496,6 +649,46 @@ Chapter: 3
 
                 if result['chapter'] != 'N/A':
                     st.caption(f"📚 Chapter: {result['chapter']}")
+
+                # For open questions, add manual grading toggle
+                if result.get('type') == 'open':
+                    st.markdown("---")
+                    st.warning("⚠️ **Instructor Grading Required:** Open question must be evaluated manually")
+
+                    # Toggle for manual grading (default to False/wrong)
+                    q_id = result['id']
+                    current_grade = st.session_state.open_question_grades.get(q_id, False)
+
+                    col_a, col_b = st.columns([3, 1])
+                    with col_a:
+                        st.markdown("**Mark this answer as:**")
+                    with col_b:
+                        new_grade = st.checkbox(
+                            "Correct",
+                            value=current_grade,
+                            key=f"grade_open_{q_id}_{i}"
+                        )
+
+                    # Update grade if changed
+                    if new_grade != current_grade:
+                        st.session_state.open_question_grades[q_id] = new_grade
+                        # Recalculate score
+                        total_open = sum(1 for r in results['results'] if r.get('type') == 'open')
+                        correct_open = sum(1 for q_id, is_correct in st.session_state.open_question_grades.items() if is_correct)
+                        mc_correct = sum(1 for r in results['results'] if r.get('type') == 'mc' and r['is_correct'])
+
+                        total_questions = len(results['results'])
+                        total_correct = mc_correct + correct_open
+                        results['correct'] = total_correct
+                        results['incorrect'] = total_questions - total_correct
+                        results['score_percentage'] = (total_correct / total_questions * 100) if total_questions > 0 else 0
+                        st.session_state.grading_results = results
+                        st.rerun()
+
+                    if new_grade:
+                        st.success("✅ Marked as CORRECT")
+                    else:
+                        st.error("❌ Marked as WRONG (default)")
 
         st.markdown("---")
 
