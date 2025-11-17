@@ -202,11 +202,97 @@ def load_markdown_questions(file_content: str) -> Tuple[List[Dict[str, Any]], st
         return [], f"Error parsing markdown: {str(e)}"
 
 
+def load_gemini_questions_singleline(file_content: str) -> Tuple[List[Dict[str, Any]], str]:
+    """
+    Fallback parser for single-line Gemini format
+    Handles: QUESTION 1 Type: mc Question: ... A) ... B) ... Correct: A Explanation: ... Chapter: ...
+    """
+    try:
+        questions = []
+
+        # Split by QUESTION pattern (with or without newline)
+        question_blocks = re.split(r'QUESTION\s+\d+\s*', file_content)
+
+        # Remove empty first element
+        if question_blocks and not question_blocks[0].strip():
+            question_blocks.pop(0)
+
+        for idx, block in enumerate(question_blocks, 1):
+            if not block.strip():
+                continue
+
+            # Single-line parsing with regex
+            question = {
+                'id': idx,
+                'type': '',
+                'question': '',
+                'options': [],
+                'correct': '',
+                'answer': '',
+                'explanation': '',
+                'chapter': ''
+            }
+
+            # Extract Type
+            type_match = re.search(r'Type:\s*(mc|open)', block, re.IGNORECASE)
+            if type_match:
+                question['type'] = type_match.group(1).lower()
+
+            # Extract Question
+            question_match = re.search(r'Question:\s*(.+?)(?=\s+[A-D]\)|Answer:|Correct:|Explanation:|Chapter:|$)', block)
+            if question_match:
+                question['question'] = question_match.group(1).strip()
+
+            if question['type'] == 'mc':
+                # Extract options A, B, C, D
+                for letter in ['A', 'B', 'C', 'D']:
+                    option_match = re.search(rf'{letter}\)\s*(.+?)(?=\s+[A-D]\)|Correct:|Explanation:|Chapter:|$)', block)
+                    if option_match:
+                        question['options'].append(f"{letter}) {option_match.group(1).strip()}")
+
+                # Extract Correct
+                correct_match = re.search(r'Correct:\s*([A-D])', block, re.IGNORECASE)
+                if correct_match:
+                    question['correct'] = correct_match.group(1).upper()
+
+            elif question['type'] == 'open':
+                # Extract Answer
+                answer_match = re.search(r'Answer:\s*(.+?)(?=Explanation:|Chapter:|$)', block)
+                if answer_match:
+                    question['answer'] = answer_match.group(1).strip()
+
+            # Extract Explanation (optional)
+            expl_match = re.search(r'Explanation:\s*(.+?)(?=Chapter:|$)', block)
+            if expl_match:
+                question['explanation'] = expl_match.group(1).strip()
+
+            # Extract Chapter (optional) - match to end of block, stripping whitespace
+            chapter_match = re.search(r'Chapter:\s*(.+)', block, re.DOTALL)
+            if chapter_match:
+                # Get chapter and strip any trailing newlines/whitespace
+                question['chapter'] = chapter_match.group(1).strip()
+
+            # Validate and add
+            if question['question'] and question['type']:
+                if question['type'] == 'mc':
+                    if len(question['options']) >= 2 and question['correct']:
+                        questions.append(question)
+                elif question['type'] == 'open':
+                    if question['answer']:
+                        questions.append(question)
+
+        return questions, "" if questions else "No valid questions found"
+
+    except Exception as e:
+        return [], f"Error parsing single-line format: {str(e)}"
+
+
 def load_gemini_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]:
     """
     Load questions from Gemini-formatted text
+    Tries multi-line format first, then falls back to single-line format
 
-    Expected format:
+    Expected format (multi-line):
     QUESTION 1
     Type: mc
     Question: What is...?
@@ -228,7 +314,7 @@ def load_gemini_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]
         questions = []
 
         # Split by QUESTION pattern
-        question_blocks = re.split(r'\n*QUESTION\s+\d+\s*\n', file_content)
+        question_blocks = re.split(r'\n+QUESTION\s+\d+\s*\n', file_content)
 
         # Remove empty first element if present
         if question_blocks and not question_blocks[0].strip():
@@ -288,8 +374,12 @@ def load_gemini_questions(file_content: str) -> Tuple[List[Dict[str, Any]], str]
                     if question['answer']:
                         questions.append(question)
 
+        # If no questions found with multi-line format, try single-line format
         if not questions:
-            return [], "No valid questions found in Gemini format"
+            questions, error = load_gemini_questions_singleline(file_content)
+            if questions:
+                return questions, ""
+            return [], "No valid questions found. Please check format matches examples in instructions."
 
         return questions, ""
 

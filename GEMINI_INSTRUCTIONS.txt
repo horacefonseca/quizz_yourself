@@ -1,32 +1,39 @@
 INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
 ====================================================
 
-Please convert the following raw text into a structured quiz format. Follow these rules EXACTLY:
+CRITICAL: Each field MUST be on its own separate line with a line break after it.
+DO NOT put multiple fields on the same line.
+
+Please convert the following raw text into a structured quiz format.
 
 FORMAT RULES:
-1. Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
-2. Each question must have these fields (one per line):
-   - Type: (either "mc" for multiple choice or "open" for open-ended)
-   - Question: (the question text)
 
-   FOR MULTIPLE CHOICE (mc):
-   - A) (first option)
-   - B) (second option)
-   - C) (third option)
-   - D) (fourth option)
-   - Correct: (the correct letter: A, B, C, or D)
+1. Start each question with "QUESTION" followed by a number on its own line
+2. Put EACH field on a NEW LINE (press Enter after each field)
+3. Fields to include:
 
-   FOR OPEN-ENDED (open):
-   - Answer: (the correct answer text)
+   ALWAYS REQUIRED (each on separate line):
+   Type: mc    (for multiple choice) OR Type: open    (for open-ended)
+   Question: [the question text]
 
-   OPTIONAL FIELDS (for both types):
-   - Explanation: (5-15 words explaining why the answer is correct)
-   - Chapter: (chapter or topic reference)
+   FOR MULTIPLE CHOICE - each option on its own line:
+   A) [first option]
+   B) [second option]
+   C) [third option]
+   D) [fourth option]
+   Correct: [the letter A, B, C, or D]
 
-3. Leave a blank line between questions
-4. Use EXACTLY this format - no extra formatting, no bold, no italics
+   FOR OPEN-ENDED:
+   Answer: [the correct answer text]
 
-EXAMPLE OUTPUT:
+   OPTIONAL (each on separate line):
+   Explanation: [5-15 words explaining the answer]
+   Chapter: [chapter or topic reference]
+
+4. Leave a blank line between questions
+5. NO markdown formatting (no bold, italics, or special formatting)
+
+EXAMPLE - COPY THIS EXACT FORMAT WITH LINE BREAKS:
 
 QUESTION 1
 Type: mc
@@ -57,6 +64,17 @@ Correct: B
 Explanation: Sigmoid squashes any input into probability range 0 to 1.
 Chapter: 1.4
 
-NOW FORMAT THE FOLLOWING TEXT:
+WRONG FORMAT (DO NOT DO THIS):
+QUESTION 1 Type: mc Question: What is... A) Option 1 B) Option 2 Correct: A
+
+CORRECT FORMAT (DO THIS):
+QUESTION 1
+Type: mc
+Question: What is...
+A) Option 1
+B) Option 2
+Correct: A
+
+NOW FORMAT THE FOLLOWING TEXT - REMEMBER: EACH FIELD ON A NEW LINE!
 -----------------------------------
 [Paste your raw text here]

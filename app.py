@@ -61,61 +61,42 @@ def main():
 
         source_option = st.radio(
             "Choose question source:",
-            ["Upload YAML/Markdown file", "Paste Gemini-formatted text", "Use bundled quiz"]
+            ["Upload YAML/Markdown file", "Paste ChatGPT-formatted text", "Use bundled quiz"]
         )
 
-        questions_loaded = False
+    # Main area content based on selection
+    questions_loaded = False
 
-        if source_option == "Upload YAML/Markdown file":
-            uploaded_file = st.file_uploader(
-                "Upload your question bank",
-                type=['yaml', 'yml', 'md'],
-                help="Upload a YAML or Markdown file containing quiz questions"
-            )
+    if source_option == "Paste ChatGPT-formatted text":
+        # CHATGPT WORKFLOW IN CENTER (moved from sidebar)
+        st.header("📝 Create Quiz from Raw Text with ChatGPT AI")
+        st.info("💡 **Quick Steps:** 1️⃣ Copy instructions → 2️⃣ Open ChatGPT → 3️⃣ Paste & add your text → 4️⃣ Copy result back here")
 
-            if uploaded_file is not None:
-                file_content = uploaded_file.read().decode('utf-8')
-                file_extension = uploaded_file.name.split('.')[-1].lower()
-                questions, error = load_questions(file_content, file_extension)
-
-                if error:
-                    st.error(f"Error loading questions: {error}")
-                else:
-                    st.session_state.questions = questions
-                    questions_loaded = True
-                    st.success(f"✅ Loaded {len(questions)} questions!")
-
-        elif source_option == "Paste Gemini-formatted text":
-            st.info("💡 **Quick Steps:** 1️⃣ Copy instructions → 2️⃣ Open Gemini → 3️⃣ Paste & add your text → 4️⃣ Copy result back here")
-
-            # Gemini instructions
-            gemini_instructions = """INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
-====================================================
-
-Please convert the following raw text into a structured quiz format. Follow these rules EXACTLY:
+        # ChatGPT instructions
+        gemini_instructions = """Please convert the following raw text into a structured quiz format and coding text format ready to cut and paste with indentations. Follow these rules EXACTLY:
 
 FORMAT RULES:
-1. Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
-2. Each question must have these fields (one per line):
-   - Type: (either "mc" for multiple choice or "open" for open-ended)
-   - Question: (the question text)
+Each question must start with "QUESTION" followed by a number (QUESTION 1, QUESTION 2, etc.)
+Each question must have these fields (one per line):
+Type: (either "mc" for multiple choice or "open" for open-ended)
+Question: (the question text)
 
-   FOR MULTIPLE CHOICE (mc):
-   - A) (first option)
-   - B) (second option)
-   - C) (third option)
-   - D) (fourth option)
-   - Correct: (the correct letter: A, B, C, or D)
+FOR MULTIPLE CHOICE (mc):
+A) (first option)
+B) (second option)
+C) (third option)
+D) (fourth option)
+Correct: (the correct letter: A, B, C, or D)
 
-   FOR OPEN-ENDED (open):
-   - Answer: (the correct answer text)
+FOR OPEN-ENDED (open):
+Answer: (the correct answer text)
 
-   OPTIONAL FIELDS (for both types):
-   - Explanation: (5-15 words explaining why the answer is correct)
-   - Chapter: (chapter or topic reference)
+OPTIONAL FIELDS (for both types):
+Explanation: (5-15 words explaining why the answer is correct)
+Chapter: (chapter or topic reference)
 
-3. Leave a blank line between questions
-4. Use EXACTLY this format - no extra formatting, no bold, no italics
+Leave a blank line between questions
+Use EXACTLY this format - no extra formatting, no bold, no italics
 
 EXAMPLE OUTPUT:
 
@@ -137,18 +118,56 @@ Answer: Classification with exactly two possible class labels
 Explanation: Binary classification has exactly two possible outcomes.
 Chapter: 3
 
-NOW FORMAT THE FOLLOWING TEXT:
------------------------------------
+====================================================
 [Paste your raw text here]"""
 
-            # Action buttons row
-            col1, col2 = st.columns([1, 1])
+        # Action buttons row
+        col1, col2 = st.columns([1, 1])
 
-            with col1:
-                # Copy button with JavaScript
-                copy_button_html = f"""
-                <button onclick="copyToClipboard()" style="
-                    background-color: #4CAF50;
+        with col1:
+            # Copy button with JavaScript
+            copy_button_html = f"""
+            <button onclick="copyToClipboard()" style="
+                background-color: #4CAF50;
+                color: white;
+                padding: 12px 24px;
+                font-size: 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                transition: all 0.3s;
+            " onmouseover="this.style.backgroundColor='#45a049'"
+               onmouseout="this.style.backgroundColor='#4CAF50'">
+                📋 Copy Instructions
+            </button>
+            <textarea id="gemini-instructions" style="position: absolute; left: -9999px;">{gemini_instructions}</textarea>
+            <p id="copy-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
+            <script>
+            function copyToClipboard() {{
+                var copyText = document.getElementById("gemini-instructions");
+                copyText.style.position = "static";
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand("copy");
+                copyText.style.position = "absolute";
+                document.getElementById("copy-status").innerHTML = "✅ Copied to clipboard!";
+                setTimeout(function() {{
+                    document.getElementById("copy-status").innerHTML = "";
+                }}, 3000);
+            }}
+            </script>
+            """
+            st.markdown(copy_button_html, unsafe_allow_html=True)
+
+        with col2:
+            # ChatGPT link button
+            chatgpt_button_html = """
+            <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
+                <button style="
+                    background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
                     color: white;
                     padding: 12px 24px;
                     font-size: 16px;
@@ -159,84 +178,66 @@ NOW FORMAT THE FOLLOWING TEXT:
                     font-weight: bold;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                     transition: all 0.3s;
-                " onmouseover="this.style.backgroundColor='#45a049'"
-                   onmouseout="this.style.backgroundColor='#4CAF50'">
-                    📋 Copy Instructions
+                " onmouseover="this.style.transform='scale(1.05)'"
+                   onmouseout="this.style.transform='scale(1)'">
+                    🤖 Open ChatGPT
                 </button>
-                <textarea id="gemini-instructions" style="position: absolute; left: -9999px;">{gemini_instructions}</textarea>
-                <p id="copy-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
-                <script>
-                function copyToClipboard() {{
-                    var copyText = document.getElementById("gemini-instructions");
-                    copyText.style.position = "static";
-                    copyText.select();
-                    copyText.setSelectionRange(0, 99999);
-                    document.execCommand("copy");
-                    copyText.style.position = "absolute";
-                    document.getElementById("copy-status").innerHTML = "✅ Copied to clipboard!";
-                    setTimeout(function() {{
-                        document.getElementById("copy-status").innerHTML = "";
-                    }}, 3000);
-                }}
-                </script>
-                """
-                st.markdown(copy_button_html, unsafe_allow_html=True)
+            </a>
+            """
+            st.markdown(chatgpt_button_html, unsafe_allow_html=True)
 
-            with col2:
-                # Gemini link button
-                gemini_button_html = """
-                <a href="https://gemini.google.com" target="_blank" style="text-decoration: none;">
-                    <button style="
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        padding: 12px 24px;
-                        font-size: 16px;
-                        border: none;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        width: 100%;
-                        font-weight: bold;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        transition: all 0.3s;
-                    " onmouseover="this.style.transform='scale(1.05)'"
-                       onmouseout="this.style.transform='scale(1)'">
-                        ✨ Open Gemini
-                    </button>
-                </a>
-                """
-                st.markdown(gemini_button_html, unsafe_allow_html=True)
+        # Expandable view of instructions (optional, for reference)
+        with st.expander("📖 View Full Instructions"):
+            st.code(gemini_instructions, language=None)
 
-            # Expandable view of instructions (optional, for reference)
-            with st.expander("📖 View Full Instructions"):
-                st.code(gemini_instructions, language=None)
+        st.markdown("---")
 
-            st.markdown("---")
+        # Text area for pasting ChatGPT output (20,000 words ≈ 120,000 characters)
+        chatgpt_text = st.text_area(
+            "Paste ChatGPT's formatted output here:",
+            height=300,
+            max_chars=120000,
+            placeholder="Paste the formatted questions from ChatGPT here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
+        )
 
-            # Text area for pasting Gemini output (20,000 words ≈ 120,000 characters)
-            gemini_text = st.text_area(
-                "Paste Gemini's formatted output here:",
-                height=300,
-                max_chars=120000,
-                placeholder="Paste the formatted questions from Gemini here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
+        if chatgpt_text and chatgpt_text.strip():
+            # Count approximate words
+            word_count = len(chatgpt_text.split())
+            st.caption(f"📝 Approximately {word_count:,} words pasted")
+
+            # Parse the ChatGPT-formatted text
+            questions, error = load_questions(chatgpt_text, 'gemini')
+
+            if error:
+                st.error(f"❌ Error parsing format: {error}")
+                st.info("💡 Make sure you copied the EXACT format from ChatGPT. Check the instructions above.")
+            else:
+                st.session_state.questions = questions
+                questions_loaded = True
+                st.success(f"✅ Successfully parsed {len(questions)} questions!")
+
+    # Other options stay in sidebar
+    with st.sidebar:
+        if source_option == "Upload YAML/Markdown file":
+            uploaded_file = st.file_uploader(
+                "Upload your question bank",
+                type=['yaml', 'yml', 'md'],
+                help="Upload a YAML or Markdown file containing quiz questions"
             )
 
-            if gemini_text and gemini_text.strip():
-                # Count approximate words
-                word_count = len(gemini_text.split())
-                st.caption(f"📝 Approximately {word_count:,} words pasted")
-
-                # Parse the Gemini-formatted text
-                questions, error = load_questions(gemini_text, 'gemini')
+            if uploaded_file is not None:
+                file_content = uploaded_file.read().decode('utf-8')
+                file_extension = uploaded_file.name.split('.')[-1].lower()
+                questions, error = load_questions(file_content, file_extension)
 
                 if error:
-                    st.error(f"❌ Error parsing Gemini format: {error}")
-                    st.info("💡 Make sure you copied the EXACT format from Gemini. Check the instructions above.")
+                    st.error(f"Error loading questions: {error}")
                 else:
                     st.session_state.questions = questions
                     questions_loaded = True
-                    st.success(f"✅ Successfully parsed {len(questions)} questions!")
+                    st.success(f"✅ Loaded {len(questions)} questions!")
 
-        else:  # Use bundled quiz
+        elif source_option == "Use bundled quiz":
             # Look for sample quizzes in sample_quizzes folder
             sample_dir = Path(__file__).parent / "sample_quizzes"
 
