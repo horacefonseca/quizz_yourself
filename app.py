@@ -355,8 +355,10 @@ RAW TEXT TO CONVERT:
                     key="custom_num_input"
                 )
                 final_num = custom_num
+                st.caption(f"DEBUG: Using custom number: {final_num}")
             else:
                 final_num = suggested_num
+                st.caption(f"DEBUG: Using suggested number: {final_num}")
 
             st.markdown("---")
 
