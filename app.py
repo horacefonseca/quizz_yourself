@@ -111,8 +111,19 @@ def main():
         user_raw_text = st.text_area(
             "Enter your raw quiz content here:",
             height=200,
-            placeholder="Example:\n\nWhat is the capital of France?\nParis is the capital\n\nWho wrote Romeo and Juliet?\nShakespeare wrote it\n..."
+            placeholder="Example:\n\nWhat is the capital of France?\nParis is the capital\n\nWho wrote Romeo and Juliet?\nShakespeare wrote it\n...",
+            key="user_raw_text_input"
         )
+
+        # Show preview of pasted text (last 4 lines)
+        if user_raw_text and user_raw_text.strip():
+            lines = user_raw_text.strip().split('\n')
+            if len(lines) > 4:
+                preview_lines = lines[-4:]
+                st.caption(f"📝 {len(lines)} lines pasted. Showing last 4 lines:")
+                st.code('\n'.join(preview_lines), language=None)
+            else:
+                st.caption(f"📝 {len(lines)} lines pasted")
 
         # STEP 2: Generate combined prompt
         if user_raw_text and user_raw_text.strip():
@@ -185,7 +196,10 @@ RAW TEXT TO CONVERT:
             col1, col2 = st.columns([1, 1])
 
             with col1:
-                # Copy button
+                # Copy button - using properly escaped content
+                import html
+                escaped_prompt = html.escape(st.session_state.combined_prompt)
+
                 copy_button_html = f"""
                 <button onclick="copyPrompt()" style="
                     background-color: #4CAF50;
@@ -203,7 +217,7 @@ RAW TEXT TO CONVERT:
                    onmouseout="this.style.backgroundColor='#4CAF50'">
                     📋 Copy Combined Prompt
                 </button>
-                <textarea id="combined-prompt" style="position: absolute; left: -9999px;">{st.session_state.combined_prompt}</textarea>
+                <textarea id="combined-prompt" style="position: absolute; left: -9999px;">{escaped_prompt}</textarea>
                 <p id="copy-prompt-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
                 <script>
                 function copyPrompt() {{
@@ -211,12 +225,25 @@ RAW TEXT TO CONVERT:
                     copyText.style.position = "static";
                     copyText.select();
                     copyText.setSelectionRange(0, 999999);
-                    document.execCommand("copy");
+
+                    // Try modern clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.writeText) {{
+                        navigator.clipboard.writeText(copyText.value).then(function() {{
+                            document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
+                            setTimeout(function() {{
+                                document.getElementById("copy-prompt-status").innerHTML = "";
+                            }}, 3000);
+                        }});
+                    }} else {{
+                        // Fallback to execCommand
+                        document.execCommand("copy");
+                        document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
+                        setTimeout(function() {{
+                            document.getElementById("copy-prompt-status").innerHTML = "";
+                        }}, 3000);
+                    }}
+
                     copyText.style.position = "absolute";
-                    document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
-                    setTimeout(function() {{
-                        document.getElementById("copy-prompt-status").innerHTML = "";
-                    }}, 3000);
                 }}
                 </script>
                 """
@@ -254,13 +281,21 @@ RAW TEXT TO CONVERT:
                 "After ChatGPT formats your questions, paste the output here:",
                 height=300,
                 max_chars=120000,
-                placeholder="Paste ChatGPT's formatted output here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n..."
+                placeholder="Paste ChatGPT's formatted output here...\n\nExample:\nQUESTION 1\nType: mc\nQuestion: What is...?\nA) Option A\nB) Option B\n...",
+                key="chatgpt_output_input"
             )
 
             if chatgpt_output and chatgpt_output.strip():
-                # Count words
+                # Show preview (last 4 lines)
+                lines = chatgpt_output.strip().split('\n')
                 word_count = len(chatgpt_output.split())
-                st.caption(f"📝 Approximately {word_count:,} words pasted")
+
+                st.caption(f"📝 {len(lines)} lines pasted ({word_count:,} words)")
+
+                if len(lines) > 4:
+                    preview_lines = lines[-4:]
+                    with st.expander("👁️ Preview (last 4 lines)", expanded=False):
+                        st.code('\n'.join(preview_lines), language=None)
 
                 # Parse button
                 if st.button("🔍 Parse Questions", type="primary", use_container_width=True):
