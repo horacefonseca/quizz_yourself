@@ -86,15 +86,10 @@ def main():
                     st.success(f"✅ Loaded {len(questions)} questions!")
 
         elif source_option == "Paste Gemini-formatted text":
-            st.info("💡 **Instructions:** Use Gemini to format your raw text, then paste the result here")
+            st.info("💡 **Quick Steps:** 1️⃣ Copy instructions → 2️⃣ Open Gemini → 3️⃣ Paste & add your text → 4️⃣ Copy result back here")
 
-            # Expandable instructions
-            with st.expander("📋 Click to view Gemini Instructions (Copy & Paste to Gemini)"):
-                gemini_instructions = """**Copy this entire prompt and paste it to Gemini along with your raw text:**
-
----
-
-INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
+            # Gemini instructions
+            gemini_instructions = """INSTRUCTIONS FOR GEMINI - Quiz Question Formatting
 ====================================================
 
 Please convert the following raw text into a structured quiz format. Follow these rules EXACTLY:
@@ -144,10 +139,78 @@ Chapter: 3
 
 NOW FORMAT THE FOLLOWING TEXT:
 -----------------------------------
-[Paste your raw text here]
-"""
+[Paste your raw text here]"""
+
+            # Action buttons row
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                # Copy button with JavaScript
+                copy_button_html = f"""
+                <button onclick="copyToClipboard()" style="
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 12px 24px;
+                    font-size: 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    width: 100%;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    transition: all 0.3s;
+                " onmouseover="this.style.backgroundColor='#45a049'"
+                   onmouseout="this.style.backgroundColor='#4CAF50'">
+                    📋 Copy Instructions
+                </button>
+                <textarea id="gemini-instructions" style="position: absolute; left: -9999px;">{gemini_instructions}</textarea>
+                <p id="copy-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
+                <script>
+                function copyToClipboard() {{
+                    var copyText = document.getElementById("gemini-instructions");
+                    copyText.style.position = "static";
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999);
+                    document.execCommand("copy");
+                    copyText.style.position = "absolute";
+                    document.getElementById("copy-status").innerHTML = "✅ Copied to clipboard!";
+                    setTimeout(function() {{
+                        document.getElementById("copy-status").innerHTML = "";
+                    }}, 3000);
+                }}
+                </script>
+                """
+                st.markdown(copy_button_html, unsafe_allow_html=True)
+
+            with col2:
+                # Gemini link button
+                gemini_button_html = """
+                <a href="https://gemini.google.com" target="_blank" style="text-decoration: none;">
+                    <button style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 12px 24px;
+                        font-size: 16px;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        width: 100%;
+                        font-weight: bold;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        transition: all 0.3s;
+                    " onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                        ✨ Open Gemini
+                    </button>
+                </a>
+                """
+                st.markdown(gemini_button_html, unsafe_allow_html=True)
+
+            # Expandable view of instructions (optional, for reference)
+            with st.expander("📖 View Full Instructions"):
                 st.code(gemini_instructions, language=None)
-                st.caption("After Gemini generates the formatted output, copy it and paste below ⬇️")
+
+            st.markdown("---")
 
             # Text area for pasting Gemini output (20,000 words ≈ 120,000 characters)
             gemini_text = st.text_area(
