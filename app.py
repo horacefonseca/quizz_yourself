@@ -432,7 +432,9 @@ RAW TEXT TO CONVERT:
                 st.caption(f"DEBUG: Will use {final_num} questions from {len(st.session_state.questions)} available")
 
                 if st.button("🚀 Start Quiz", use_container_width=True):
+                    st.warning("DEBUG: Button was clicked!")
                     try:
+                        st.info("DEBUG: Inside try block")
                         # Filter questions based on settings
                         available_questions = st.session_state.questions
 
@@ -450,6 +452,8 @@ RAW TEXT TO CONVERT:
                             min(final_num, len(available_questions))
                         )
 
+                        st.success(f"DEBUG: Sampled {len(st.session_state.quiz_questions)} questions")
+
                         # Start timer if enabled
                         if st.session_state.timer_enabled:
                             import time
@@ -458,6 +462,8 @@ RAW TEXT TO CONVERT:
                         st.session_state.quiz_started = True
                         st.session_state.user_answers = {}
                         st.session_state.quiz_submitted = False
+
+                        st.success("DEBUG: About to rerun...")
                         st.rerun()
 
                     except Exception as e:
