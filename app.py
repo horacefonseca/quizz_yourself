@@ -188,38 +188,48 @@ RAW TEXT TO CONVERT:
 
             st.success("✅ Combined prompt generated! Now:")
 
-            st.info("📋 **Instructions:** Select all text in the box below (Ctrl+A), copy it (Ctrl+C), then paste it into ChatGPT")
+            # Show the combined prompt with clear copy instructions
+            with st.expander("📋 **STEP 1: COPY THIS PROMPT**", expanded=True):
+                st.info("👉 Click inside the text box below, press **Ctrl+A** (select all), then **Ctrl+C** (copy)")
 
-            # Show the combined prompt in a text area for easy copying
-            st.text_area(
-                "Combined Prompt (select all and copy):",
-                value=st.session_state.combined_prompt,
-                height=400,
-                key="combined_prompt_display"
-            )
+                # Show the combined prompt in a text area for easy copying
+                st.text_area(
+                    "Combined Prompt (click here, then Ctrl+A to select all, Ctrl+C to copy):",
+                    value=st.session_state.combined_prompt,
+                    height=400,
+                    key="combined_prompt_display"
+                )
 
-            # Action button
-            chatgpt_button_html = """
-            <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
-                <button style="
-                    background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
-                    color: white;
-                    padding: 12px 24px;
-                    font-size: 16px;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    width: 100%;
-                    font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    transition: all 0.3s;
-                " onmouseover="this.style.transform='scale(1.05)'"
-                   onmouseout="this.style.transform='scale(1)'">
-                    🤖 Open ChatGPT
-                </button>
-            </a>
-            """
-            st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+            # Action button in prominent location
+            st.markdown("### 🤖 STEP 2: OPEN CHATGPT & PASTE")
+
+            col1, col2 = st.columns([1, 2])
+
+            with col1:
+                chatgpt_button_html = """
+                <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
+                    <button style="
+                        background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+                        color: white;
+                        padding: 16px 24px;
+                        font-size: 18px;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        width: 100%;
+                        font-weight: bold;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        transition: all 0.3s;
+                    " onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                        🤖 Open ChatGPT
+                    </button>
+                </a>
+                """
+                st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+
+            with col2:
+                st.write("Click to open ChatGPT, then paste the prompt you copied above (Ctrl+V)")
 
             st.markdown("---")
 
