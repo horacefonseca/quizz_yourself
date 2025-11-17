@@ -378,6 +378,7 @@ RAW TEXT TO CONVERT:
                 max_value=100,
                 value=50,
                 step=10,
+                key="percentage_slider",
                 help="Choose what percentage of the question bank to include"
             )
 
@@ -385,14 +386,15 @@ RAW TEXT TO CONVERT:
             st.write(f"Suggested: {suggested_num} questions")
 
             # Custom override
-            use_custom = st.checkbox("Use custom number of questions")
+            use_custom = st.checkbox("Use custom number of questions", key="use_custom_checkbox")
 
             if use_custom:
                 custom_num = st.number_input(
                     "Number of questions:",
                     min_value=1,
                     max_value=total_questions,
-                    value=min(suggested_num, total_questions)
+                    value=min(suggested_num, total_questions),
+                    key="custom_num_input"
                 )
                 final_num = custom_num
             else:
@@ -403,13 +405,18 @@ RAW TEXT TO CONVERT:
             # Advanced Settings (for larger quizzes)
             with st.expander("⚙️ Advanced Quiz Settings"):
                 st.markdown("**Random Seed (for reproducibility)**")
-                use_seed = st.checkbox("Use random seed", value=False)
+                use_seed = st.checkbox(
+                    "Use random seed",
+                    value=st.session_state.random_seed is not None,
+                    key="use_seed_checkbox"
+                )
                 if use_seed:
                     seed_value = st.number_input(
                         "Seed value:",
                         min_value=0,
                         max_value=9999,
-                        value=42,
+                        value=42 if st.session_state.random_seed is None else st.session_state.random_seed,
+                        key="seed_value_input",
                         help="Same seed = same quiz version every time"
                     )
                     st.session_state.random_seed = seed_value
@@ -419,31 +426,40 @@ RAW TEXT TO CONVERT:
                 st.markdown("---")
 
                 st.markdown("**Timer Settings**")
-                st.session_state.timer_enabled = st.checkbox("Enable quiz timer", value=False)
+                timer_enabled = st.checkbox(
+                    "Enable quiz timer",
+                    value=st.session_state.timer_enabled,
+                    key="timer_enabled_checkbox"
+                )
+                st.session_state.timer_enabled = timer_enabled
 
-                if st.session_state.timer_enabled:
-                    st.session_state.timer_per_question = st.select_slider(
+                if timer_enabled:
+                    timer_per_question = st.select_slider(
                         "Time per question:",
                         options=[30, 60, 90],
-                        value=30,
+                        value=st.session_state.timer_per_question,
+                        key="timer_per_question_slider",
                         format_func=lambda x: f"{x} seconds"
                     )
+                    st.session_state.timer_per_question = timer_per_question
 
                     # Calculate total time
-                    total_time_seconds = final_num * st.session_state.timer_per_question
+                    total_time_seconds = final_num * timer_per_question
                     total_minutes = total_time_seconds // 60
                     st.info(f"⏱️ Total quiz time: {total_minutes} minutes ({total_time_seconds} seconds)")
 
                 st.markdown("---")
 
                 st.markdown("**Open Questions**")
-                st.session_state.include_open_questions = st.checkbox(
+                include_open = st.checkbox(
                     "Include open questions",
-                    value=True,
+                    value=st.session_state.include_open_questions,
+                    key="include_open_checkbox",
                     help="Open questions must be evaluated by instructor"
                 )
+                st.session_state.include_open_questions = include_open
 
-                if not st.session_state.include_open_questions:
+                if not include_open:
                     st.warning("⚠️ Open questions will be excluded from quiz")
                 else:
                     # Count available open questions
