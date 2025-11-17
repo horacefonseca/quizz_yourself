@@ -188,21 +188,21 @@ RAW TEXT TO CONVERT:
 
             st.success("✅ Combined prompt generated! Now:")
 
-            # Show the combined prompt
-            with st.expander("📖 View Combined Prompt", expanded=True):
-                st.code(st.session_state.combined_prompt, language=None)
+            st.info("📋 **Instructions:** Select all text in the box below (Ctrl+A), copy it (Ctrl+C), then paste it into ChatGPT")
 
-            # Action buttons
-            col1, col2 = st.columns([1, 1])
+            # Show the combined prompt in a text area for easy copying
+            st.text_area(
+                "Combined Prompt (select all and copy):",
+                value=st.session_state.combined_prompt,
+                height=400,
+                key="combined_prompt_display"
+            )
 
-            with col1:
-                # Copy button - using properly escaped content
-                import html
-                escaped_prompt = html.escape(st.session_state.combined_prompt)
-
-                copy_button_html = f"""
-                <button onclick="copyPrompt()" style="
-                    background-color: #4CAF50;
+            # Action button
+            chatgpt_button_html = """
+            <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
+                <button style="
+                    background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
                     color: white;
                     padding: 12px 24px;
                     font-size: 16px;
@@ -213,65 +213,13 @@ RAW TEXT TO CONVERT:
                     font-weight: bold;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                     transition: all 0.3s;
-                " onmouseover="this.style.backgroundColor='#45a049'"
-                   onmouseout="this.style.backgroundColor='#4CAF50'">
-                    📋 Copy Combined Prompt
+                " onmouseover="this.style.transform='scale(1.05)'"
+                   onmouseout="this.style.transform='scale(1)'">
+                    🤖 Open ChatGPT
                 </button>
-                <textarea id="combined-prompt" style="position: absolute; left: -9999px;">{escaped_prompt}</textarea>
-                <p id="copy-prompt-status" style="color: green; font-weight: bold; margin-top: 8px; min-height: 24px;"></p>
-                <script>
-                function copyPrompt() {{
-                    var copyText = document.getElementById("combined-prompt");
-                    copyText.style.position = "static";
-                    copyText.select();
-                    copyText.setSelectionRange(0, 999999);
-
-                    // Try modern clipboard API first
-                    if (navigator.clipboard && navigator.clipboard.writeText) {{
-                        navigator.clipboard.writeText(copyText.value).then(function() {{
-                            document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
-                            setTimeout(function() {{
-                                document.getElementById("copy-prompt-status").innerHTML = "";
-                            }}, 3000);
-                        }});
-                    }} else {{
-                        // Fallback to execCommand
-                        document.execCommand("copy");
-                        document.getElementById("copy-prompt-status").innerHTML = "✅ Copied to clipboard!";
-                        setTimeout(function() {{
-                            document.getElementById("copy-prompt-status").innerHTML = "";
-                        }}, 3000);
-                    }}
-
-                    copyText.style.position = "absolute";
-                }}
-                </script>
-                """
-                st.markdown(copy_button_html, unsafe_allow_html=True)
-
-            with col2:
-                # ChatGPT link button
-                chatgpt_button_html = """
-                <a href="https://chatgpt.com" target="_blank" style="text-decoration: none;">
-                    <button style="
-                        background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
-                        color: white;
-                        padding: 12px 24px;
-                        font-size: 16px;
-                        border: none;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        width: 100%;
-                        font-weight: bold;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        transition: all 0.3s;
-                    " onmouseover="this.style.transform='scale(1.05)'"
-                       onmouseout="this.style.transform='scale(1)'">
-                        🤖 Open ChatGPT
-                    </button>
-                </a>
-                """
-                st.markdown(chatgpt_button_html, unsafe_allow_html=True)
+            </a>
+            """
+            st.markdown(chatgpt_button_html, unsafe_allow_html=True)
 
             st.markdown("---")
 
