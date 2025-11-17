@@ -11,7 +11,10 @@ from utils import (
     sample_questions,
     grade_quiz,
     generate_pdf,
-    calculate_quiz_length
+    calculate_quiz_length,
+    export_quiz_markdown,
+    export_quiz_text,
+    export_quiz_google_forms_csv
 )
 
 # Page configuration
@@ -425,6 +428,66 @@ RAW TEXT TO CONVERT:
                     # Count available open questions
                     open_count = sum(1 for q in st.session_state.questions if q.get('type') == 'open')
                     st.caption(f"📝 Available open questions: {open_count}")
+
+            st.markdown("---")
+
+            # Export Quiz Section
+            with st.expander("📥 Export Quiz (Unsolved)", expanded=False):
+                st.write("Download the quiz questions without answers for use in other platforms:")
+
+                # Prepare the questions to export (based on settings)
+                export_questions = st.session_state.questions
+                if not st.session_state.include_open_questions:
+                    export_questions = [q for q in export_questions if q.get('type') != 'open']
+
+                # Sample if needed
+                if final_num < len(export_questions):
+                    import random
+                    if st.session_state.random_seed is not None:
+                        random.seed(st.session_state.random_seed)
+                    export_questions = sample_questions(export_questions, final_num)
+
+                st.caption(f"Will export {len(export_questions)} questions")
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    # Markdown export
+                    md_content = export_quiz_markdown(export_questions, "Quiz Export")
+                    st.download_button(
+                        label="📄 Markdown",
+                        data=md_content,
+                        file_name="quiz_export.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                        help="Download as Markdown file"
+                    )
+
+                with col2:
+                    # Text export
+                    txt_content = export_quiz_text(export_questions, "Quiz Export")
+                    st.download_button(
+                        label="📝 Plain Text",
+                        data=txt_content,
+                        file_name="quiz_export.txt",
+                        mime="text/plain",
+                        use_container_width=True,
+                        help="Download as plain text file"
+                    )
+
+                with col3:
+                    # Google Forms CSV export
+                    csv_content = export_quiz_google_forms_csv(export_questions)
+                    st.download_button(
+                        label="📊 Google Forms",
+                        data=csv_content,
+                        file_name="quiz_export_google_forms.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                        help="Download CSV for Google Forms bulk upload"
+                    )
+
+                st.info("💡 **Google Forms Import:** Upload the CSV file to Google Forms using the bulk import feature.")
 
             st.markdown("---")
 

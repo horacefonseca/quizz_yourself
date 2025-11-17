@@ -619,3 +619,184 @@ def calculate_quiz_length(total_questions: int, percentage: int = None, custom_n
         return max(1, min(num, total_questions))
 
     return total_questions
+
+
+def export_quiz_markdown(questions: List[Dict[str, Any]], quiz_title: str = "Quiz") -> str:
+    """
+    Export quiz questions to Markdown format (unsolved)
+
+    Args:
+        questions: List of quiz questions
+        quiz_title: Title of the quiz
+
+    Returns:
+        Markdown formatted string
+    """
+    md_content = f"# {quiz_title}\n\n"
+    md_content += f"**Total Questions:** {len(questions)}\n\n"
+    md_content += "---\n\n"
+
+    for i, q in enumerate(questions, 1):
+        md_content += f"## Question {i}\n\n"
+
+        # Question text
+        md_content += f"{q['question']}\n\n"
+
+        # Type indicator
+        md_content += f"**Type:** {q['type'].upper()}\n\n"
+
+        # Chapter if available
+        if q.get('chapter'):
+            md_content += f"**Chapter:** {q['chapter']}\n\n"
+
+        # Options for MC questions
+        if q['type'] == 'mc' and 'options' in q:
+            md_content += "**Options:**\n"
+            for option in q['options']:
+                md_content += f"- {option}\n"
+            md_content += "\n"
+
+        # Answer space for open questions
+        if q['type'] == 'open':
+            md_content += "**Your Answer:**\n\n"
+            md_content += "_" * 50 + "\n\n"
+
+        md_content += "---\n\n"
+
+    return md_content
+
+
+def export_quiz_text(questions: List[Dict[str, Any]], quiz_title: str = "Quiz") -> str:
+    """
+    Export quiz questions to plain text format (unsolved)
+
+    Args:
+        questions: List of quiz questions
+        quiz_title: Title of the quiz
+
+    Returns:
+        Plain text formatted string
+    """
+    text_content = f"{quiz_title}\n"
+    text_content += "=" * len(quiz_title) + "\n\n"
+    text_content += f"Total Questions: {len(questions)}\n\n"
+    text_content += "=" * 70 + "\n\n"
+
+    for i, q in enumerate(questions, 1):
+        text_content += f"Question {i}\n"
+        text_content += "-" * 70 + "\n\n"
+
+        # Question text
+        text_content += f"{q['question']}\n\n"
+
+        # Type and chapter
+        text_content += f"Type: {q['type'].upper()}"
+        if q.get('chapter'):
+            text_content += f" | Chapter: {q['chapter']}"
+        text_content += "\n\n"
+
+        # Options for MC questions
+        if q['type'] == 'mc' and 'options' in q:
+            text_content += "Options:\n"
+            for option in q['options']:
+                text_content += f"  {option}\n"
+            text_content += "\nYour Answer: _____\n\n"
+
+        # Answer space for open questions
+        if q['type'] == 'open':
+            text_content += "Your Answer:\n"
+            text_content += "_" * 70 + "\n\n"
+
+        text_content += "=" * 70 + "\n\n"
+
+    return text_content
+
+
+def export_quiz_google_forms_csv(questions: List[Dict[str, Any]]) -> str:
+    """
+    Export quiz questions to CSV format for Google Forms bulk upload
+
+    Args:
+        questions: List of quiz questions
+
+    Returns:
+        CSV formatted string ready for Google Forms import
+
+    Format:
+    Question,Type,Points,Answer 1,Answer 2,Answer 3,Answer 4,Correct Answer,Feedback
+    """
+    import csv
+    from io import StringIO
+
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Header row for Google Forms
+    writer.writerow([
+        'Question',
+        'Type',
+        'Points',
+        'Answer 1',
+        'Answer 2',
+        'Answer 3',
+        'Answer 4',
+        'Correct Answer',
+        'Feedback'
+    ])
+
+    for q in questions:
+        if q['type'] == 'mc':
+            # Extract just the text from options (remove A), B), etc.)
+            options_text = []
+            for opt in q.get('options', []):
+                # Remove the letter prefix (A), B), etc.)
+                text = opt.split(')', 1)[1].strip() if ')' in opt else opt.strip()
+                options_text.append(text)
+
+            # Pad with empty strings if less than 4 options
+            while len(options_text) < 4:
+                options_text.append('')
+
+            # Get correct answer text
+            correct_letter = q.get('correct', 'A').upper()
+            correct_index = ord(correct_letter) - ord('A')
+            correct_answer = options_text[correct_index] if correct_index < len(options_text) else options_text[0]
+
+            # Feedback
+            feedback = q.get('explanation', '')
+            if q.get('chapter'):
+                feedback += f" (Chapter: {q['chapter']})"
+
+            writer.writerow([
+                q['question'],
+                'Multiple choice',
+                '1',  # Default 1 point
+                options_text[0],
+                options_text[1],
+                options_text[2],
+                options_text[3],
+                correct_answer,
+                feedback
+            ])
+
+        elif q['type'] == 'open':
+            # Short answer type for Google Forms
+            feedback = q.get('explanation', '')
+            if q.get('answer'):
+                feedback = f"Expected answer: {q['answer']}. " + feedback
+            if q.get('chapter'):
+                feedback += f" (Chapter: {q['chapter']})"
+
+            writer.writerow([
+                q['question'],
+                'Short answer',
+                '1',  # Default 1 point
+                '',  # No options for short answer
+                '',
+                '',
+                '',
+                q.get('answer', ''),  # Expected answer
+                feedback
+            ])
+
+    return output.getvalue()
