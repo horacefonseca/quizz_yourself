@@ -357,10 +357,30 @@ def grade_quiz(questions: List[Dict[str, Any]], user_answers: Dict[int, str]) ->
         if q['type'] == 'mc':
             correct_answer = q['correct']
             is_correct = user_answer.upper() == correct_answer.upper()
+
+            # Get full text of options for MC questions
+            user_answer_text = "No answer"
+            correct_answer_text = correct_answer
+
+            if user_answer:
+                # Find the full option text for user's answer
+                for option in q.get('options', []):
+                    if option.strip().upper().startswith(user_answer.upper() + ')'):
+                        user_answer_text = option.strip()
+                        break
+
+            # Find the full option text for correct answer
+            for option in q.get('options', []):
+                if option.strip().upper().startswith(correct_answer.upper() + ')'):
+                    correct_answer_text = option.strip()
+                    break
+
         else:  # open question
             # For open questions, exact match (case-insensitive)
             correct_answer = q['answer']
             is_correct = user_answer.lower() == correct_answer.lower()
+            user_answer_text = user_answer if user_answer else "No answer"
+            correct_answer_text = correct_answer
 
         if is_correct:
             correct += 1
@@ -369,8 +389,8 @@ def grade_quiz(questions: List[Dict[str, Any]], user_answers: Dict[int, str]) ->
             'id': q_id,
             'question': q['question'],
             'type': q['type'],
-            'user_answer': user_answer if user_answer else "No answer",
-            'correct_answer': correct_answer,
+            'user_answer': user_answer_text,
+            'correct_answer': correct_answer_text,
             'is_correct': is_correct,
             'explanation': q.get('explanation', 'No explanation provided'),
             'chapter': q.get('chapter', 'N/A')
