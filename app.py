@@ -428,33 +428,41 @@ RAW TEXT TO CONVERT:
 
             # Start Quiz Button
             if not st.session_state.quiz_started:
+                # DEBUG: Show what will be used
+                st.caption(f"DEBUG: Will use {final_num} questions from {len(st.session_state.questions)} available")
+
                 if st.button("🚀 Start Quiz", use_container_width=True):
-                    # Filter questions based on settings
-                    available_questions = st.session_state.questions
+                    try:
+                        # Filter questions based on settings
+                        available_questions = st.session_state.questions
 
-                    # Filter out open questions if disabled
-                    if not st.session_state.include_open_questions:
-                        available_questions = [q for q in available_questions if q.get('type') != 'open']
+                        # Filter out open questions if disabled
+                        if not st.session_state.include_open_questions:
+                            available_questions = [q for q in available_questions if q.get('type') != 'open']
 
-                    # Sample questions with optional seed
-                    import random
-                    if st.session_state.random_seed is not None:
-                        random.seed(st.session_state.random_seed)
+                        # Sample questions with optional seed
+                        import random
+                        if st.session_state.random_seed is not None:
+                            random.seed(st.session_state.random_seed)
 
-                    st.session_state.quiz_questions = sample_questions(
-                        available_questions,
-                        min(final_num, len(available_questions))
-                    )
+                        st.session_state.quiz_questions = sample_questions(
+                            available_questions,
+                            min(final_num, len(available_questions))
+                        )
 
-                    # Start timer if enabled
-                    if st.session_state.timer_enabled:
-                        import time
-                        st.session_state.quiz_start_time = time.time()
+                        # Start timer if enabled
+                        if st.session_state.timer_enabled:
+                            import time
+                            st.session_state.quiz_start_time = time.time()
 
-                    st.session_state.quiz_started = True
-                    st.session_state.user_answers = {}
-                    st.session_state.quiz_submitted = False
-                    st.rerun()
+                        st.session_state.quiz_started = True
+                        st.session_state.user_answers = {}
+                        st.session_state.quiz_submitted = False
+                        st.rerun()
+
+                    except Exception as e:
+                        st.error(f"❌ Error starting quiz: {str(e)}")
+                        st.error(f"Debug: final_num={final_num}, questions={len(st.session_state.questions)}")
             else:
                 if st.button("🔄 Reset Quiz", use_container_width=True):
                     reset_quiz()
