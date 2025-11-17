@@ -364,7 +364,7 @@ RAW TEXT TO CONVERT:
                 st.warning("sample_quizzes folder not found")
 
         # Step 2: Quiz Length Selection
-        if questions_loaded and st.session_state.questions:
+        if st.session_state.questions:
             st.markdown("---")
             st.subheader("2. Quiz Length")
 
@@ -503,6 +503,13 @@ RAW TEXT TO CONVERT:
                     st.rerun()
 
     # Main content area
+    # DEBUG INFO
+    with st.expander("🔍 Debug Info", expanded=False):
+        st.write(f"questions loaded: {len(st.session_state.questions)}")
+        st.write(f"quiz_started: {st.session_state.quiz_started}")
+        st.write(f"quiz_questions: {len(st.session_state.quiz_questions)}")
+        st.write(f"quiz_submitted: {st.session_state.quiz_submitted}")
+
     if not st.session_state.quiz_started:
         # Welcome screen
         st.markdown("""
@@ -534,6 +541,9 @@ RAW TEXT TO CONVERT:
         # Quiz Interface
         st.header(f"Quiz: {len(st.session_state.quiz_questions)} Questions")
 
+        # DEBUG
+        st.info(f"DEBUG: About to display {len(st.session_state.quiz_questions)} questions")
+
         # Timer display (if enabled)
         if st.session_state.timer_enabled and st.session_state.quiz_start_time:
             import time
@@ -553,15 +563,10 @@ RAW TEXT TO CONVERT:
 
             st.warning(f"{timer_color} **Time Remaining:** {minutes_left}:{seconds_left:02d} (Total: {total_allowed//60} min)")
 
-            # Auto-refresh every second
-            if remaining_time > 0:
-                st.empty()
-                time.sleep(1)
-                st.rerun()
-
         st.markdown("---")
 
         # Display all questions
+        st.warning(f"DEBUG: Starting question loop with {len(st.session_state.quiz_questions)} questions")
         for i, q in enumerate(st.session_state.quiz_questions, 1):
             with st.container():
                 st.subheader(f"Question {i} of {len(st.session_state.quiz_questions)}")
@@ -625,6 +630,17 @@ RAW TEXT TO CONVERT:
                     st.session_state.user_answers
                 )
                 st.session_state.quiz_submitted = True
+                st.rerun()
+
+        # Auto-refresh timer after displaying all questions
+        if st.session_state.timer_enabled and st.session_state.quiz_start_time:
+            import time
+            elapsed_time = time.time() - st.session_state.quiz_start_time
+            total_allowed = len(st.session_state.quiz_questions) * st.session_state.timer_per_question
+            remaining_time = max(0, total_allowed - int(elapsed_time))
+
+            if remaining_time > 0:
+                time.sleep(1)
                 st.rerun()
 
     else:
