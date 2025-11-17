@@ -85,7 +85,7 @@ def main():
 
         source_option = st.radio(
             "Choose question source:",
-            ["Upload YAML/Markdown file", "Paste ChatGPT-formatted text", "Use bundled quiz"]
+            ["Upload YAML/Markdown/Text file", "Paste ChatGPT-formatted text", "Use bundled quiz"]
         )
 
     # Main area content based on selection
@@ -273,16 +273,21 @@ RAW TEXT TO CONVERT:
 
     # Other options stay in sidebar
     with st.sidebar:
-        if source_option == "Upload YAML/Markdown file":
+        if source_option == "Upload YAML/Markdown/Text file":
             uploaded_file = st.file_uploader(
                 "Upload your question bank",
-                type=['yaml', 'yml', 'md'],
-                help="Upload a YAML or Markdown file containing quiz questions"
+                type=['yaml', 'yml', 'md', 'txt'],
+                help="Upload a YAML, Markdown, or Text file containing quiz questions"
             )
 
             if uploaded_file is not None:
                 file_content = uploaded_file.read().decode('utf-8')
                 file_extension = uploaded_file.name.split('.')[-1].lower()
+
+                # Route .txt files to gemini parser (same format)
+                if file_extension == 'txt':
+                    file_extension = 'gemini'
+
                 questions, error = load_questions(file_content, file_extension)
 
                 if error:
